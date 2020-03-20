@@ -37,13 +37,13 @@ def graph_vgg(pr_target):
 
             conv_weight = module.weight.data
 
-            m = int(conv_weight.size(0) * pr_target)
-            k = m
-            
-            m_tmp = 0
+            m = int(conv_weight.size(0) * (1 - pr_target))#Number of channels to keep
+            k = m #Calculate the nearest k channels of each channel
+
+            m_tmp = 0 #Common nearest channels after k nearest neighbor channels intersect
 
             while m_tmp < m:
-
+                
                 #get m_tmp filters that are most similar to all filters, m_tmp < k
                 #indice
                 m_tmp, indice = graph_weight(conv_weight, k)
@@ -53,6 +53,7 @@ def graph_vgg(pr_target):
             indices.append(indice)
 
             logger.info('layer[{}]\tk[{}]\tm[{}]'.format(current_layer,k,m))
+            current_layer+=1
 
 
 

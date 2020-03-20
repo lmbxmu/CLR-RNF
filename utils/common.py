@@ -7,6 +7,7 @@ import torch
 from .options import args
 import numpy as np
 import math
+import torch.nn.functional as F
 
 import os
 
@@ -63,39 +64,47 @@ class checkpoint():
 
 def graph_weight(weight,k):
 
-    W = weight.cpu().clone()
+    if torch.cuda.is_available():
+        W = weight.clone() 
+    else:
+        W = weight.cpu().clone()
     f_num = W.size(0)
     if weight.dim() == 4:  #Convolution layer
         W = W.view(f_num, -1)
     else:
         raise('The weight dim must be 4!')
 
-    s_matrix = np.zeros((f_num,f_num))
-    k_matrix = np.zeros((f_num,k))
+    s_matrix = torch.eye(f_num)
 
+    #Calculate the similarity matrix
     for i in range(f_num):
-        for j in range(f_num):
-            s_matrix[i][j] = euclidean(W[i],W[j])
-    
-    b = np.argsort(s_matrix) #sort
+        s_matrix[i] = F.pairwise_distance(torch.unsqueeze(W[i],0).repeat(f_num,1),W)
 
-    k_matrix = b[:,f_num-k-1:f_num]
+    s_matrix = torch.exp(-torch.pow(s_matrix,2))
 
-    indice = k_matrix[0,:]
+    #First Sort
+    sorted_value, _ = torch.sort(s_matrix,descending=True)
 
+    #For each filter, divide the distance of the k nearest filter to it, 
+    #that is, normalize according to the formula of graph hashing
+    for i in range(f_num):
+        s_matrix[i] = torch.div(s_matrix[i],torch.sum(sorted_value[i][1:k]))
+
+    #Resort normalized distances
+    _, indices = torch.sort(s_matrix,descending=True)
+
+    #Take the nearest k filters
+    indices = indices[:,:k].numpy()
+
+    #Intersect k nearest neighbors of all filters
+    indice = indices[0,:]
     for i in range(f_num-1):
         #print(indice)
-        indice = list(set(indice).intersection(set(k_matrix[i+1,:])))
+        indice = list(set(indice).intersection(set(indices[i+1,:])))
 
     m = len(indice)
 
-
     return m, indice
-
-
-def euclidean(p, q, t=1):
-    e = -sum([(p[i] - q[i]) ** 2 for i in range(p.size(0))])/t
-    return math.exp(e)
 
 
 def get_logger(file_path):
