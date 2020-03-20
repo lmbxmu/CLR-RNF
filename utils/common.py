@@ -86,14 +86,12 @@ def graph_weight(weight,k):
     indices = indices[:,:k].numpy()
 
     #Intersect k nearest neighbors of all filters
-    indice = set(indices[0,:])
-    for i in range(f_num-1):
-        indice = indice.intersection(set(indices[i+1,:]))
-    indice = list(indice)
+    indices = indices.tolist()
+    indices = set(indices[0]).intersection(*indices[1:])
 
-    m = len(indice)
+    m = len(indices)
 
-    return m, indice
+    return m, indices
 
 def pairwise_distances(x, y=None):
     '''
