@@ -75,7 +75,7 @@ def graph_weight(weight,k):
         raise('The weight dim must be 4!')
 
     #Calculate the similarity matrix
-    s_matrix = torch.exp(-pairwise_distances(W,W))
+    s_matrix = torch.exp(-pairwise_distances(W))
 
     #Normalization
     for i in range(f_num):
