@@ -75,16 +75,14 @@ def graph_weight(weight,k):
         raise('The weight dim must be 4!')
 
     #Calculate the similarity matrix
-    s_matrix = pairwise_distances(W,W)
-
-    s_matrix = torch.exp(-s_matrix)
-
-    #First Sort
-    sorted_value, indices = torch.sort(s_matrix,descending=True)
+    s_matrix = torch.exp(-pairwise_distances(W,W))
 
     #Normalization
     for i in range(f_num):
-        s_matrix[i] = torch.div(s_matrix[i],torch.sum(sorted_value[i]))
+        s_matrix[i] = torch.div(s_matrix[i],torch.sum(s_matrix[i]))
+
+    #Sort
+    sorted_value, indices = torch.sort(s_matrix,descending=True)
 
     #m_matrix = torch.index_select(s_matrix,0,indice)
 
