@@ -96,5 +96,11 @@ parser.add_argument(
     help='Path to the pretrain model . default:None'
 )
 
+parser.add_argument(
+    '--graph_gpu',
+    action='store_true',
+    help='run the graph algorithm with gpu or not. Default:False'
+)
+
 
 args = parser.parse_args()

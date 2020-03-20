@@ -64,7 +64,7 @@ class checkpoint():
 
 def graph_weight(weight,k):
 
-    if torch.cuda.is_available():
+    if args.graph_gpu:
         W = weight.clone() 
     else:
         W = weight.cpu().clone()
