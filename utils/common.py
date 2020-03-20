@@ -86,10 +86,10 @@ def graph_weight(weight,k):
     indices = indices[:,:k].numpy()
 
     #Intersect k nearest neighbors of all filters
-    indice = indices[0,:]
+    indice = set(indices[0,:])
     for i in range(f_num-1):
-        #print(indice)
-        indice = list(set(indice).intersection(set(indices[i+1,:])))
+        indice = indice.intersection(set(indices[i+1,:]))
+    indice = list(indice)
 
     m = len(indice)
 
