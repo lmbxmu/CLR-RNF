@@ -11,7 +11,7 @@ import time
 from data import cifar10
 from importlib import import_module
 
-from utils.common import graph_weight
+from utils.common import graph_weight, kmeans_weight, random_weight, getloss
 
 device = torch.device(f"cuda:{args.gpus[0]}") if torch.cuda.is_available() else 'cpu'
 checkpoint = utils.checkpoint(args)
@@ -38,20 +38,21 @@ def graph_vgg(pr_target):
             conv_weight = module.weight.data
 
             m = int(conv_weight.size(0) * (1 - pr_target))#Number of channels to keep
-            k = m #Calculate the nearest k channels of each channel
 
-            m_tmp = 0 #Common nearest channels after k nearest neighbor channels intersect
-            
-            while m_tmp < m:
-                #get m_tmp filters that are most similar to all filters, m_tmp < k
-                #indice
-                m_tmp, indice = graph_weight(conv_weight, k)
-                logger.info('k[{}]\tm_tmp[{}]\ttarget m[{}]'.format(k,m_tmp,m))
-                k += 1
+            #s_matrix is the origin similarity matrix, m_..matrix is the NXM similarity matrix
+            m_knn, s_matrix = graph_weight(conv_weight, m, logger)
+            m_kmeans = kmeans_weight(conv_weight, m)
+            m_random = random_weight(conv_weight, m)
 
-            indices.append(indice)
+            loss_knn = getloss(m_knn, s_matrix)
+            loss_kmeans = getloss(m_kmeans, s_matrix)
+            loss_random = getloss(m_random, s_matrix)
 
-            logger.info('layer[{}]\tk[{}]\tm[{}]'.format(current_layer,k,m))
+            logger.info('layer[{}]\t'
+                'loss_knn:{:.2f}\t'
+                'loss_kmeans:{:.2f}\t'
+                'loss_random:{:.2f}'.format(current_layer,loss_knn,loss_kmeans,loss_random)
+                )
             current_layer+=1
 
 

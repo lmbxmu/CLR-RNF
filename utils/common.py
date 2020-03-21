@@ -8,6 +8,8 @@ from .options import args
 import numpy as np
 import math
 import torch.nn.functional as F
+import random
+from sklearn.cluster import KMeans
 
 import os
 
@@ -62,39 +64,85 @@ class checkpoint():
         if is_best:
             shutil.copyfile(save_path, f'{self.ckpt_dir}/model_best.pt')
 
-def graph_weight(weight,k):
+
+
+def graph_weight(weight,m,logger):
 
     if args.graph_gpu:
         W = weight.clone() 
     else:
         W = weight.cpu().clone()
-
     if weight.dim() == 4:  #Convolution layer
         W = W.view(W.size(0), -1)
     else:
         raise('The weight dim must be 4!')
-
     #Calculate the similarity matrix and normalize
     s_matrix = F.normalize(torch.exp(-pairwise_distances(W)),1)
-
     #Sort
     sorted_value, indices = torch.sort(s_matrix,descending=True)
-
-    #m_matrix = torch.index_select(s_matrix,0,indices)
-
-    #Take the nearest k filters
+   
     if args.graph_gpu:
-        indices = indices[:,:k].cpu().numpy()
+        indices = indices.cpu()
+    indices = indices.numpy()
+
+    k = m #Calculate the nearest k channels of each channel
+    m_tmp = 0 #Common nearest channels after k nearest neighbor channels intersect
+    while m_tmp < m:
+        #Take the nearest k filters
+        indicek = indices[:,:k].tolist()
+        #Intersect k nearest neighbors of all filters
+        indicek = set(indicek[0]).intersection(*indicek[1:])
+        m_tmp = len(indicek)
+        if m_tmp > m:
+            #Take the difference set for the result of the last KNN, 
+            #and randomly select the filter from the difference set until the target m is reached
+            pre_indicek = indices[:,:k-1].tolist()
+            pre_indicek = set(pre_indicek[0]).intersection(*pre_indicek[1:])
+            redundant_indice = indicek.difference(pre_indicek)
+            while len(pre_indicek) != m:
+                pre_indicek.add(redundant_indice.pop())
+            indicek = pre_indicek
+            m_tmp = m
+
+        #logger.info('k[{}]\tm_tmp[{}]\ttarget m[{}]'.format(k,m_tmp,m))
+        k += 1
+
+    Wprune = torch.index_select(W,0,torch.tensor(list(indicek)))
+    m_matrix = F.normalize(torch.exp(-pairwise_distances(W,Wprune)),1)
+    return m_matrix, s_matrix
+
+def kmeans_weight(weight,m):
+    if args.graph_gpu:
+        W = weight.clone() 
     else:
-        indices = indices[:,:k].numpy()
+        W = weight.cpu().clone()
+    if weight.dim() == 4:  #Convolution layer
+        W = W.view(W.size(0), -1)
+    else:
+        raise('The weight dim must be 4!')
+    kmeans = KMeans(n_clusters=m, random_state=0).fit(W.numpy())
+    m_matrix = F.normalize(torch.exp(-pairwise_distances(W,torch.from_numpy(kmeans.cluster_centers_))),1)
+    return m_matrix
 
-    #Intersect k nearest neighbors of all filters
-    indices = indices.tolist()
-    indices = set(indices[0]).intersection(*indices[1:])
 
-    m = len(indices)
+def random_weight(weight,m):
+    if args.graph_gpu:
+        W = weight.clone() 
+    else:
+        W = weight.cpu().clone()
+    if weight.dim() == 4:  #Convolution layer
+        W = W.view(W.size(0), -1)
+    else:
+        raise('The weight dim must be 4!')
+    indices = random.sample(range(0, W.size(0)-1), m)
+    Wprune = torch.index_select(W,0,torch.tensor(list(indices)))
+    m_matrix = F.normalize(torch.exp(-pairwise_distances(W,Wprune)),1)
+    return m_matrix
 
-    return m, indices
+def getloss(B,A):
+    loss = torch.norm(A - torch.mm(B, B.t()))
+    return loss
+
 
 def pairwise_distances(x, y=None):
     '''
