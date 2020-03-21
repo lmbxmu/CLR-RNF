@@ -68,9 +68,9 @@ def graph_weight(weight,k):
         W = weight.clone() 
     else:
         W = weight.cpu().clone()
-    f_num = W.size(0)
+
     if weight.dim() == 4:  #Convolution layer
-        W = W.view(f_num, -1)
+        W = W.view(W.size(0), -1)
     else:
         raise('The weight dim must be 4!')
 
@@ -80,10 +80,13 @@ def graph_weight(weight,k):
     #Sort
     sorted_value, indices = torch.sort(s_matrix,descending=True)
 
-    #m_matrix = torch.index_select(s_matrix,0,indice)
+    #m_matrix = torch.index_select(s_matrix,0,indices)
 
     #Take the nearest k filters
-    indices = indices[:,:k].numpy()
+    if args.graph_gpu:
+        indices = indices[:,:k].cpu().numpy()
+    else:
+        indices = indices[:,:k].numpy()
 
     #Intersect k nearest neighbors of all filters
     indices = indices.tolist()
