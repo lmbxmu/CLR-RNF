@@ -1,13 +1,44 @@
 # GraphPruning
 
-Run the following code:
 
+
+## GraphPruner
+
+You can run the following code to prune model on CIFAR-10:
 ```shell
-python graphpruning_cifar.py
+python graphpruning_cifar.py 
 --arch vgg_cifar 
 --cfg vgg16 
---job_dir ./experiment/vgg_cifar 
---pretrain_model /data/model/vgg16.pt 
+--data_path /data/cifar 
+--job_dir ./experiment/cifar/vgg_1 
+--pretrain_model /home/pretrain/vgg16_cifar10.pt 
+--lr 0.01 
+--lr_decay_step 50 100 
+--weight_decay 0.005  
+--num_epochs 150 
+--gpus 0
+--pr_target 0.7 
+--graph_gpu
+```
+
+
+ You can run the following code to prune model on ImageNet: 
+
+```shell
+python graphpruning_cifar.py 
+--dataset imagenet 
+--data_path /data/ImageNet/ 
+--pretrain_model /data/model/resnet50.pth 
+--job_dir /data/experiment/resnet50 
+--arch resnet 
+--cfg resnet50 
+--lr 0.1 
+--lr_decay_step 30 60 
+--num_epochs 90 
+--train_batch_size 256 
+--weight_decay 1e-4 
+--gpus 0 1 2 
+--pr_target 0.7 
 --graph_gpu
 ```
 
@@ -27,4 +58,8 @@ optional arguments:
   --arch ARCH           Architecture of model. default:resnet
   --cfg CFG             Detail architecuture of model. default:resnet56
   --graph_gpu           Use gpu to graph the filters or not. default:False
+  --init_method INIT_METHOD
+                        Initital method of pruned model. default:direct.
+                        optimal:random_project
+  --pr_targt            Target prune ratio of parameters
 ```

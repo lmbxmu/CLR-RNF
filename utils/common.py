@@ -76,6 +76,7 @@ def graph_weight(weight,m,logger):
         W = W.view(W.size(0), -1)
     else:
         raise('The weight dim must be 4!')
+    device = torch.device(f"cuda:{args.gpus[0]}") if torch.cuda.is_available() else 'cpu'
     #Calculate the similarity matrix and normalize
     s_matrix = F.normalize(torch.exp(-pairwise_distances(W)),1)
     #Sort
@@ -106,41 +107,50 @@ def graph_weight(weight,m,logger):
 
         #logger.info('k[{}]\tm_tmp[{}]\ttarget m[{}]'.format(k,m_tmp,m))
         k += 1
-
-    Wprune = torch.index_select(W,0,torch.tensor(list(indicek)))
+    if args.graph_gpu:
+        Wprune = torch.index_select(W,0,torch.tensor(list(indicek)).to(device))
+    else:
+        Wprune = torch.index_select(W,0,torch.tensor(list(indicek)))
     m_matrix = F.normalize(torch.exp(-pairwise_distances(W,Wprune)),1)
-    return m_matrix, s_matrix
+    Wprune = Wprune.cpu()
+    return m_matrix, s_matrix, Wprune, indicek
 
 def kmeans_weight(weight,m):
-    if args.graph_gpu:
-        W = weight.clone() 
-    else:
-        W = weight.cpu().clone()
+    W = weight.cpu().clone()
     if weight.dim() == 4:  #Convolution layer
         W = W.view(W.size(0), -1)
     else:
         raise('The weight dim must be 4!')
+    device = torch.device(f"cuda:{args.gpus[0]}") if torch.cuda.is_available() else 'cpu'
+
     kmeans = KMeans(n_clusters=m, random_state=0).fit(W.numpy())
-    m_matrix = F.normalize(torch.exp(-pairwise_distances(W,torch.from_numpy(kmeans.cluster_centers_))),1)
+    if args.graph_gpu:
+        m_matrix = F.normalize(torch.exp(-pairwise_distances(W.to(device),torch.from_numpy(kmeans.cluster_centers_).to(device))),1)
+    else:
+        m_matrix = F.normalize(torch.exp(-pairwise_distances(W,torch.from_numpy(kmeans.cluster_centers_))),1)
     return m_matrix
 
 
 def random_weight(weight,m):
-    if args.graph_gpu:
-        W = weight.clone() 
-    else:
-        W = weight.cpu().clone()
+    
+    W = weight.cpu().clone()
     if weight.dim() == 4:  #Convolution layer
         W = W.view(W.size(0), -1)
     else:
         raise('The weight dim must be 4!')
+    device = torch.device(f"cuda:{args.gpus[0]}") if torch.cuda.is_available() else 'cpu'
     indices = random.sample(range(0, W.size(0)-1), m)
-    Wprune = torch.index_select(W,0,torch.tensor(list(indices)))
+    if args.graph_gpu:
+        W = W.to(device)
+        Wprune = torch.index_select(W,0,torch.tensor(list(indices)).to(device))
+    else:
+        Wprune = torch.index_select(W,0,torch.tensor(list(indices)))
     m_matrix = F.normalize(torch.exp(-pairwise_distances(W,Wprune)),1)
     return m_matrix
 
 def getloss(B,A):
-    loss = torch.norm(A - torch.mm(B, B.t()))
+    #loss = torch.pow(torch.norm(A - torch.mm(B, B.t()),2),2)
+    loss = torch.norm(A - torch.mm(B, B.t()),1)/(A.size(0)*A.size(0))
     return loss
 
 
@@ -166,6 +176,23 @@ def pairwise_distances(x, y=None):
     #     dist = dist - torch.diag(dist.diag)
     return torch.clamp(dist, 0.0, np.inf)
 
+
+def random_project(weight, channel_num):
+
+    A = weight.cpu().clone()
+    A = A.view(A.size(0), -1)
+    rp = SparseRandomProjection(n_components=channel_num * weight.size(2) * weight.size(3))
+    rp.fit(A)
+    return rp.transform(A)
+
+def direct_project(weight, indices):
+
+    A = torch.randn(weight.size(0), len(indices), weight.size(2), weight.size(3))
+    for i, indice in enumerate(indices):
+
+        A[:, i, :, :] = weight[:, indice, :, :]
+
+    return A
 
 def get_logger(file_path):
     logger = logging.getLogger('gal')

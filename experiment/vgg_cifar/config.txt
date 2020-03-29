@@ -1,4 +1,4 @@
-2020-03-22-00:12:58
+2020-03-28-12:06:08
 
 gpus: [0]
 dataset: cifar10
@@ -14,5 +14,7 @@ lr: 0.01
 lr_decay_step: [50, 100]
 weight_decay: 0.0005
 pretrain_model: /Users/zhangyuxin/Documents/MAC/pretrain_model/vgg16_cifar10.pt
+pr_target: 0.5
+init_method: direct_project
 graph_gpu: False
 

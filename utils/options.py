@@ -86,14 +86,29 @@ parser.add_argument(
 parser.add_argument(
     '--weight_decay',
     type=float,
-    default=5e-4,
-    help='The weight decay of loss. default:5e-4')
+    default=5e-3,
+    help='The weight decay of loss. default:5e-3'
+)
 
 parser.add_argument(
     '--pretrain_model',
     type=str,
     default=None,
     help='Path to the pretrain model . default:None'
+)
+
+parser.add_argument(
+    '--pr_target',
+    type=float,
+    default=0.5,
+    help='Prune target of the parameters. default:50%'
+)
+
+parser.add_argument(
+    '--init_method',
+    type=str,
+    default='direct_project',
+    help='Initital method of pruned model. default:direct_project other:random_project'
 )
 
 parser.add_argument(
