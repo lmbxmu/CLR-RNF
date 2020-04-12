@@ -42,6 +42,19 @@ python graphpruning_cifar.py
 --graph_gpu
 ```
 
+You can run the following code to compare the loss between graph，Kmeans & random: 
+
+```shell
+python cal_graph_loss.py 
+--arch vgg_cifar 
+--cfg vgg16 
+--data_path /data/cifar 
+--job_dir ./experiment/vgg
+--pretrain_model pretrain/vgg16_cifar10.pt 
+--gpus 0 
+--graph_gpu
+```
+
 ## Other Arguments
 
 ```shell

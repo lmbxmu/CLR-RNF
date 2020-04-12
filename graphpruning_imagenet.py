@@ -30,6 +30,7 @@ def get_data_set(type='train'):
 trainLoader = get_data_set('train')
 testLoader = get_data_set('test')
 
+
 # Load pretrained model
 print('==> Loading pretrained model..')
 if args.pretrain_model is None or not os.path.exists(args.pretrain_model):
@@ -37,13 +38,15 @@ if args.pretrain_model is None or not os.path.exists(args.pretrain_model):
 ckpt = torch.load(args.pretrain_model, map_location=device)
 if args.arch == 'resnet_imagenet':
     origin_model = import_module(f'model.{args.arch}').resnet(args.cfg).to(device)
+    origin_model.load_state_dict(ckpt)
 elif args.arch == 'mobilenet_v1':
     origin_model = import_module(f'model.{args.arch}').mobilenet_v1().to(device)
+    origin_model.load_state_dict(ckpt['state_dict'])
 elif args.arch == 'mobilenet_v2':
     origin_model = import_module(f'model.{args.arch}').mobilenet_v2().to(device)
 else:
     raise('arch not exist!')
-origin_model.load_state_dict(ckpt)
+
 
 def graph_resnet(pr_target):
 
@@ -157,7 +160,108 @@ def graph_resnet(pr_target):
         model.load_state_dict(state_dict)
     else:
         pass
-    return model, cfg       
+    return model, cfg    
+
+def graph_mobilenet_v1(pr_target):    
+
+    pr_cfg = []
+    weights = []
+
+    cfg = []
+    centroids_state_dict = {}
+    prune_state_dict = []
+    indices = []
+
+    i = 0
+    #Sort the weights and get the pruning threshold
+    for name, module in origin_model.named_modules():
+        if isinstance(module, nn.Conv2d):
+            if i == 0:
+                conv_weight = module.weight.data
+                weights.append(conv_weight.view(-1))
+            elif i % 2 == 1:
+                conv_weight = module.weight.data
+            else:
+                conv_weight_1 = module.weight.data
+                weights.append(torch.cat((conv_weight.view(-1),conv_weight_1.view(-1)),0))
+            i += 1
+
+    all_weights = torch.cat(weights,0)
+    preserve_num = int(all_weights.size(0) * (1-pr_target))
+    preserve_weight, _ = torch.topk(torch.abs(all_weights), preserve_num)
+    threshold = preserve_weight[preserve_num-1]
+
+    #Based on the pruning threshold, the prune cfg of each layer is obtained
+    for weight in weights:
+        pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
+    #print(pr_cfg)
+
+    current_layer = 0
+
+    flag = True
+    #Get the preseverd filters after pruning by graph method based on pruning proportion
+    for name, module in origin_model.named_modules():
+
+        if isinstance(module, nn.Conv2d):
+
+            conv_weight = module.weight.data
+            #print(conv_weight.size())
+            _, _, centroids, indice = graph_weight(conv_weight, int(conv_weight.size(0) * (1 - pr_cfg[current_layer])),logger)
+            if flag:
+                current_layer -= 1
+                cfg.append(len(centroids))
+            current_layer += 1
+            flag = not flag
+
+
+            indices.append(indice)
+            centroids_state_dict[name + '.weight'] = centroids.reshape((-1, conv_weight.size(1), conv_weight.size(2), conv_weight.size(3)))
+            prune_state_dict.append(name + '.bias')
+
+        elif isinstance(module, nn.BatchNorm2d):
+            prune_state_dict.append(name + '.weight')
+            prune_state_dict.append(name + '.bias')
+            prune_state_dict.append(name + '.running_var')
+            prune_state_dict.append(name + '.running_mean')
+
+        elif isinstance(module, nn.Linear):
+            prune_state_dict.append(name + '.weight')
+            prune_state_dict.append(name + '.bias')
+
+
+    #load weight
+    model = import_module(f'model.{args.arch}').mobilenet_v1(layer_cfg=cfg).to(device)
+    '''
+    for param_tensor in model.state_dict():
+        print(param_tensor, '\t', model.state_dict()[param_tensor].size())
+    for param_tensor in centroids_state_dict:
+        print(param_tensor, '\t', centroids_state_dict[param_tensor].size())
+    '''
+    if args.init_method == 'random_project' or args.init_method == 'direct_project':
+        pretrain_state_dict = origin_model.state_dict()
+        state_dict = model.state_dict()
+        centroids_state_dict_keys = list(centroids_state_dict.keys())
+
+        for i, (k, v) in enumerate(centroids_state_dict.items()):
+            if i == 0 or i % 2 == 1: #first conv and dw conv need not to prune channel
+                continue
+            if args.init_method == 'random_project':
+                centroids_state_dict[k] = random_project(torch.FloatTensor(centroids_state_dict[k]),
+                                                         len(indices[i - 2]))
+            else:
+                centroids_state_dict[k] = direct_project(torch.FloatTensor(centroids_state_dict[k]), indices[i - 2])
+
+        for k, v in state_dict.items():
+            if k in prune_state_dict:
+                continue
+            elif k in centroids_state_dict_keys:
+                state_dict[k] = torch.FloatTensor(centroids_state_dict[k]).view_as(state_dict[k])
+            else:
+                state_dict[k] = pretrain_state_dict[k]
+        model.load_state_dict(state_dict)
+    else:
+        pass
+    return model, cfg   
 
 def train(model, optimizer, trainLoader, args, epoch, topk=(1,)):
 

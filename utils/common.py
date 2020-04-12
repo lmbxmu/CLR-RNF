@@ -10,6 +10,7 @@ import math
 import torch.nn.functional as F
 import random
 from sklearn.cluster import KMeans
+from sklearn.random_projection import SparseRandomProjection
 
 import os
 
@@ -186,8 +187,10 @@ def random_project(weight, channel_num):
     return rp.transform(A)
 
 def direct_project(weight, indices):
+    #print(weight.size())
 
     A = torch.randn(weight.size(0), len(indices), weight.size(2), weight.size(3))
+    #print(A.size())
     for i, indice in enumerate(indices):
 
         A[:, i, :, :] = weight[:, indice, :, :]

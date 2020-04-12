@@ -1,0 +1,20 @@
+2020-03-29-21:29:45
+
+gpus: [0, 1]
+dataset: cifar10
+data_path: /data/cifar10/
+job_dir: ./experiment/imagenet/mobilenetv1
+arch: mobilenet_v1
+cfg: mobilenet_v1
+num_epochs: 90
+train_batch_size: 256
+eval_batch_size: 256
+momentum: 0.9
+lr: 0.1
+lr_decay_step: [30]
+weight_decay: 0.0001
+pretrain_model: /Users/zhangyuxin/Documents/MAC/pretrain_model/mobilenet_imagenet.pth.tar
+pr_target: 0.8
+init_method: direct_project
+graph_gpu: False
+
