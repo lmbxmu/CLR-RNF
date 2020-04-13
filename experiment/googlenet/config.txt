@@ -1,11 +1,11 @@
-2020-04-13-19:57:50
+2020-04-13-17:09:52
 
 gpus: [0]
 dataset: cifar10
 data_path: /data/cifar10/
-job_dir: ./experiment/vgg_cifar
-arch: vgg_cifar
-cfg: vgg16
+job_dir: ./experiment/googlenet
+arch: googlenet
+cfg: googlenet
 num_epochs: 150
 train_batch_size: 256
 eval_batch_size: 100
@@ -13,8 +13,8 @@ momentum: 0.9
 lr: 0.01
 lr_decay_step: [50, 100]
 weight_decay: 0.005
-pretrain_model: /Users/zhangyuxin/Documents/MAC/pretrain_model/vgg16_cifar10.pt
-pr_target: 0.8
+pretrain_model: /Users/zhangyuxin/Documents/MAC/pretrain_model/googlenet.pt
+pr_target: 0.6
 init_method: direct_project
 graph_gpu: False
 

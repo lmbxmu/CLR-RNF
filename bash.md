@@ -1,6 +1,10 @@
 python cal_graph_loss.py --arch vgg_cifar --cfg vgg16 --job_dir ./experiment/vgg_cifar --pretrain_model /Users/zhangyuxin/Documents/MAC/pretrain_model/vgg16_cifar10.pt
 
-python graphpruning_cifar.py --arch vgg_cifar --cfg vgg16 --job_dir ./experiment/vgg_cifar --pretrain_model /Users/zhangyuxin/Documents/MAC/pretrain_model/vgg16_cifar10.pt
+python cifar.py --arch vgg_cifar --cfg vgg16 --job_dir ./experiment/vgg_cifar --pretrain_model /Users/zhangyuxin/Documents/MAC/pretrain_model/vgg16_cifar10.pt --pr_target 0.8
+
+python cifar.py --arch resnet_cifar --cfg resnet56 --job_dir ./experiment/resnet_cifar --pretrain_model /Users/zhangyuxin/Documents/MAC/pretrain_model/resnet_56.pt --pr_target 0.8
+
+python cifar.py --arch googlenet --cfg googlenet --job_dir ./experiment/googlenet --pretrain_model /Users/zhangyuxin/Documents/MAC/pretrain_model/googlenet.pt --pr_target 0.8
 
 python graphpruning_cifar.py --arch vgg_cifar --cfg vgg16 --data_path /home/lmb/ABCPrunerPlus/data/cifar --job_dir ./experiment/vgg_cifar --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/vgg16_cifar10.pt --gpus 0 1 --graph_gpu
 

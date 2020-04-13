@@ -6,7 +6,7 @@
 
 You can run the following code to prune model on CIFAR-10:
 ```shell
-python graphpruning_cifar.py 
+python cifar.py 
 --arch vgg_cifar 
 --cfg vgg16 
 --data_path /data/cifar 
@@ -25,7 +25,7 @@ python graphpruning_cifar.py
  You can run the following code to prune model on ImageNet: 
 
 ```shell
-python graphpruning_cifar.py 
+python imagenet.py 
 --dataset imagenet 
 --data_path /data/ImageNet/ 
 --pretrain_model /data/model/resnet50.pth 
@@ -41,6 +41,17 @@ python graphpruning_cifar.py
 --pr_target 0.7 
 --graph_gpu
 ```
+You can run the following code to get FLOPs prune ratio under a given parameters prune target:
+
+```shell
+python get_flops.py 
+--arch resnet_imagenet 
+--cfg resnet50 
+--pretrain_model /media/disk2/zyc/prune_result/resnet_50/pruned_checkpoint/resnet50-19c8e357.pth 
+--job_dir ./experiment/imagenet/resnet50_flop 
+--graph_gpu 
+--pr_target 0.1
+```
 
 You can run the following code to compare the loss between graph，Kmeans & random: 
 
@@ -55,6 +66,13 @@ python cal_graph_loss.py
 --graph_gpu
 ```
 
+## Pretrained model
+| Model        | Download Link                                                |
+| ------------ | ------------------------------------------------------------ |
+| Mobilenet-v1 | https://hanlab.mit.edu/projects/amc/external/mobilenet_imagenet.pth.tar |
+| Mobilenet-v2 | https://download.pytorch.org/models/mobilenet_v2-b0353104.pth |
+
+
 ## Other Arguments
 
 ```shell
@@ -65,7 +83,7 @@ optional arguments:
   --dataset DATASET     Select dataset to train. default:cifar10
   --data_path DATA_PATH
                         The dictionary where the input is stored.
-                        default:/home/lishaojie/data/cifar10/
+                        default:/home/data/cifar10/
   --job_dir JOB_DIR     The directory where the summaries will be stored.
                         default:./experiments
   --arch ARCH           Architecture of model. default:resnet

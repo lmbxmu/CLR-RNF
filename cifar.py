@@ -65,6 +65,7 @@ def graph_vgg(pr_target):
     #Based on the pruning threshold, the prune cfg of each layer is obtained
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
+
     
     #Get the preseverd filters after pruning by graph method based on pruning proportion
     for name, module in origin_model.named_modules():
