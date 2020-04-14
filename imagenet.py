@@ -9,7 +9,7 @@ import time
 from data import imagenet_dali
 from importlib import import_module
 from model.resnet_imagenet import BasicBlock, Bottleneck
-#from model.mobilenet_v2 import InvertedResidual
+from model.mobilenet_v2 import InvertedResidual
 from utils.common import graph_weight, kmeans_weight, random_weight,random_project, direct_project
 
 
@@ -351,7 +351,7 @@ def graph_mobilenet_v2(pr_target):
                 prune_state_dict.append(name + '.conv.4.running_var')
 
                 current_index += 1
-
+                
     model = import_module(f'model.{args.arch}').mobilenet_v2(layer_cfg=cfg).to(device)
     if args.init_method == 'random_project' or args.init_method == 'direct_project':
         pretrain_state_dict = origin_model.state_dict()

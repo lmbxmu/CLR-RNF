@@ -30,7 +30,7 @@ python imagenet.py
 --data_path /data/ImageNet/ 
 --pretrain_model /data/model/resnet50.pth 
 --job_dir /data/experiment/resnet50 
---arch resnet 
+--arch resnet_imagenet 
 --cfg resnet50 
 --lr 0.1 
 --lr_decay_step 30 60 
@@ -71,7 +71,7 @@ python cal_graph_loss.py
 | Model        | Download Link                                                |
 | ------------ | ------------------------------------------------------------ |
 | Mobilenet-v1 | https://hanlab.mit.edu/projects/amc/external/mobilenet_imagenet.pth.tar |
-| Mobilenet-v2 | https://download.pytorch.org/models/mobilenet_v2-b0353104.pth |
+| Mobilenet-v2 | https://drive.google.com/open?id=1jlto6HRVD3ipNkAl1lNhDbkBp7HylaqR |
 
 
 ## Other Arguments
