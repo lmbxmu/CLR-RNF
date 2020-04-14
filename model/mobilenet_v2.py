@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 import math
 
@@ -60,19 +61,32 @@ class InvertedResidual(nn.Module):
 
 
 class MobileNetV2(nn.Module):
-    def __init__(self, n_class=1000, input_size=224, width_mult=1.):
+    def __init__(self, n_class=1000, input_size=224, width_mult=1., layer_cfg=None):
         super(MobileNetV2, self).__init__()
         block = InvertedResidual
+        layer_index = 0
+        if layer_cfg == None:
+            layer_cfg = [1] * 17
         input_channel = 32
         last_channel = 1280
         interverted_residual_setting = [
             # t, c, n, s
             [1, 16, 1, 1],
-            [6, 24, 2, 2],
-            [6, 32, 3, 2],
-            [6, 64, 4, 2],
-            [6, 96, 3, 1],
-            [6, 160, 3, 2],
+            [6, 24, 1, 2],
+            [6, 24, 1, 1],
+            [6, 32, 1, 2],
+            [6, 32, 1, 1],
+            [6, 32, 1, 1],
+            [6, 64, 1, 2],
+            [6, 64, 1, 1],
+            [6, 64, 1, 1],
+            [6, 64, 1, 1],
+            [6, 96, 1, 1],
+            [6, 96, 1, 1],
+            [6, 96, 1, 1],
+            [6, 160, 1, 2],
+            [6, 160, 1, 1],
+            [6, 160, 1, 1],
             [6, 320, 1, 1],
         ]
 
@@ -83,13 +97,11 @@ class MobileNetV2(nn.Module):
         self.features = [conv_bn(3, input_channel, 2)]
         # building inverted residual blocks
         for t, c, n, s in interverted_residual_setting:
-            output_channel = int(c * width_mult)
-            for i in range(n):
-                if i == 0:
-                    self.features.append(block(input_channel, output_channel, s, expand_ratio=t))
-                else:
-                    self.features.append(block(input_channel, output_channel, 1, expand_ratio=t))
-                input_channel = output_channel
+            output_channel = int(c * layer_cfg[layer_index])
+            self.features.append(block(input_channel,output_channel, 1, expand_ratio=t))
+            input_channel = output_channel
+            layer_index+=1
+
         # building last several layers
         self.features.append(conv_1x1_bn(input_channel, self.last_channel))
         # make it nn.Sequential
@@ -123,3 +135,18 @@ class MobileNetV2(nn.Module):
                 n = m.weight.size(1)
                 m.weight.data.normal_(0, 0.01)
                 m.bias.data.zero_()
+def mobilenet_v2(layer_cfg=None):
+    return MobileNetV2(layer_cfg=layer_cfg)
+
+if __name__ == "__main__":
+    model = MobileNetV2(layer_cfg=[0.5]*17)
+    '''
+    for name, module in model.named_modules():
+        if isinstance(module, nn.Conv2d):
+            for param_tensor in module.state_dict():
+                print(param_tensor,'\t',module.state_dict()[param_tensor].size())
+    '''
+    ckpt = torch.load('/Users/zhangyuxin/Documents/MAC/pretrain_model/mobilenet_v2.pth.tar',map_location='cpu')
+    for param_tensor in model.state_dict():
+        print(param_tensor, '\t', model.state_dict()[param_tensor].size())
+    model.load_state_dict(ckpt)

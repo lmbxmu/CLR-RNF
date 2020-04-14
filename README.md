@@ -41,6 +41,7 @@ python imagenet.py
 --pr_target 0.7 
 --graph_gpu
 ```
+
 You can run the following code to get FLOPs prune ratio under a given parameters prune target:
 
 ```shell

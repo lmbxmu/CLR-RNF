@@ -9,8 +9,9 @@ import time
 from data import imagenet_dali
 from importlib import import_module
 from model.resnet_imagenet import BasicBlock, Bottleneck
+#from model.mobilenet_v2 import InvertedResidual
 from utils.common import graph_weight, kmeans_weight, random_weight,random_project, direct_project
-from thop import profile
+
 
 device = torch.device(f"cuda:{args.gpus[0]}") if torch.cuda.is_available() else 'cpu'
 checkpoint = utils.checkpoint(args)
@@ -44,6 +45,7 @@ elif args.arch == 'mobilenet_v1':
     origin_model.load_state_dict(ckpt['state_dict'])
 elif args.arch == 'mobilenet_v2':
     origin_model = import_module(f'model.{args.arch}').mobilenet_v2().to(device)
+    origin_model.load_state_dict(ckpt)
 else:
     raise('arch not exist!')
 
@@ -263,6 +265,122 @@ def graph_mobilenet_v1(pr_target):
         pass
     return model, cfg   
 
+def graph_mobilenet_v2(pr_target):
+    pr_cfg = []
+    weights = []
+
+    cfg = []
+    centroids_state_dict = {}
+    prune_state_dict = []
+    indices = []
+
+    current_index = 0
+    # Sort the weights and get the pruning threshold
+    for name, module in origin_model.named_modules():
+
+        if isinstance(module, InvertedResidual):
+            conv1_weight = module.conv[0].weight.data
+            if len(module.conv) == 5: #expand_ratio = 1
+                weights.append(conv1_weight.view(-1))
+            else:              
+                conv2_weight = module.conv[3].weight.data
+                weights.append(torch.cat((conv1_weight.view(-1),conv2_weight.view(-1)),0))
+
+    all_weights = torch.cat(weights, 0)
+    preserve_num = int(all_weights.size(0) * (1 - pr_target))
+    preserve_weight, _ = torch.topk(torch.abs(all_weights), preserve_num)
+    threshold = preserve_weight[preserve_num - 1]
+
+    # Based on the pruning threshold, the prune cfg of each layer is obtained
+    for weight in weights:
+        pr_cfg.append(torch.sum(torch.lt(torch.abs(weight), threshold)).item() / weight.size(0))
+    print(len(pr_cfg))
+
+    # Get the preseverd filters after pruning by graph method based on pruning proportion
+    for name, module in origin_model.named_modules():
+
+        if isinstance(module, InvertedResidual):
+            print(current_index)
+            if len(module.conv) == 5: #expand_ratio = 1
+
+
+                conv1_weight = module.conv[0].weight.data
+                _, _, centroids, indice = graph_weight(conv1_weight, int(conv1_weight.size(0) * (1 - pr_cfg[current_index])),logger)
+                cfg.append(len(centroids))
+                cfg.append(0) #assume baseblock has three conv layer
+                centroids_state_dict[name + '.conv.0.weight'] = centroids
+                if args.init_method == 'random_project':
+                    centroids_state_dict[name + '.conv.3.weight'] = random_project(module.conv[3].weight.data, len(centroids))
+                else:
+                    centroids_state_dict[name + '.conv.3.weight'] = direct_project(module.conv[3].weight.data, indice)
+
+                prune_state_dict.append(name + 'conv.1.weight')
+                prune_state_dict.append(name + 'conv.1.bias')
+                prune_state_dict.append(name + 'conv.1.running_var')
+                prune_state_dict.append(name + 'conv.1.running_mean')
+                current_index+=1
+
+            else:
+                conv1_weight = module.conv[0].weight.data
+                _, _, centroids, indice = graph_weight(conv1_weight,
+                                                       int(conv1_weight.size(0) * (1 - pr_cfg[current_index-1])), logger)
+                cfg.append(len(centroids))
+                indices.append(indice)
+                centroids_state_dict[name + '.conv.0.weight'] = centroids
+
+                prune_state_dict.append(name + 'conv.1.weight')
+                prune_state_dict.append(name + 'conv.1.bias')
+                prune_state_dict.append(name + 'conv.1.running_var')
+                prune_state_dict.append(name + 'conv.1.running_mean')
+
+                conv2_weight = module.conv[3].weight.data
+                _, _, centroids, indice = graph_weight(conv2_weight,
+                                                       int(conv2_weight.size(0) * (1 - pr_cfg[current_index])), logger)
+                cfg.append(len(centroids))
+                centroids_state_dict[name + '.conv.3.weight'] = centroids.reshape(
+                    (-1, conv2_weight.size(1), conv2_weight.size(2), conv2_weight.size(3)))
+
+                if args.init_method == 'random_project':
+                    centroids_state_dict[name + '.conv.6.weight'] = random_project(module.conv[6].weight.data, len(centroids))
+                else:
+                    centroids_state_dict[name + '.conv.6.weight'] = direct_project(module.conv[6].weight.data, indice)
+
+                prune_state_dict.append(name + '.conv.4.weight')
+                prune_state_dict.append(name + '.conv.4.bias')
+                prune_state_dict.append(name + '.conv.4.running_mean')
+                prune_state_dict.append(name + '.conv.4.running_var')
+
+                current_index += 1
+
+    model = import_module(f'model.{args.arch}').mobilenet_v2(layer_cfg=cfg).to(device)
+    if args.init_method == 'random_project' or args.init_method == 'direct_project':
+        pretrain_state_dict = origin_model.state_dict()
+        state_dict = model.state_dict()
+        centroids_state_dict_keys = list(centroids_state_dict.keys())
+
+        index = 0
+        for k, v in centroids_state_dict.items():
+
+            if k.endswith('.conv.3.weight'):
+                if args.init_method == 'random_project':
+                    centroids_state_dict[k] = random_project(torch.FloatTensor(centroids_state_dict[k]),
+                                                             len(indices[index]))
+                else:
+                    centroids_state_dict[k] = direct_project(torch.FloatTensor(centroids_state_dict[k]), indices[index])
+                index += 1
+
+        for k, v in state_dict.items():
+            if k in prune_state_dict:
+                continue
+            elif k in centroids_state_dict_keys:
+                state_dict[k] = torch.FloatTensor(centroids_state_dict[k]).view_as(state_dict[k])
+            else:
+                state_dict[k] = pretrain_state_dict[k]
+        model.load_state_dict(state_dict)
+    else:
+        pass
+    return model, cfg
+
 def train(model, optimizer, trainLoader, args, epoch, topk=(1,)):
 
     model.train()
@@ -361,7 +479,7 @@ def main():
     best_top1_acc = 0.0
     best_top5_acc = 0.0
 
-    test(origin_model, testLoader, topk=(1, 5))
+    #test(origin_model, testLoader, topk=(1, 5))
     print('==> Building Model..')
     if args.pretrain_model is None or not os.path.exists(args.pretrain_model):
         raise ('Pretrained_model path should be exist!')
@@ -375,11 +493,6 @@ def main():
         raise('arch not exist!')
     print("Graph Down!")
 
-    #Calculate the flops and params of origin_model & pruned_model
-    Input = torch.randn(1, 3, 224, 224).to(device)
-    oriflops, oriparams = profile(origin_model, inputs=(Input, ))
-    flops, params = profile(model, inputs=(Input, ))
-    
     if len(args.gpus) != 1:
         model = nn.DataParallel(model, device_ids=args.gpus)
 
@@ -408,37 +521,6 @@ def main():
         checkpoint.save_model(state, epoch + 1, is_best)
 
     logger.info('Best Top-1 accuracy: {:.3f} Top-5 accuracy: {:.3f}'.format(float(best_top1_acc), float(best_top5_acc)))
-
-    orichannel = 0
-    channel = 0
-
-
-    for name, module in origin_model.named_modules():
-        if isinstance(module, nn.Conv2d):
-            orichannel += origin_model.state_dict()[name + '.weight'].size(0)
-            #print(orimodel.state_dict()[name + '.weight'].size(0))
-
-    for name, module in model.named_modules():
-
-        if isinstance(module, nn.Conv2d):
-            channel += model.state_dict()[name + '.weight'].size(0)
-            #print(model.state_dict()[name + '.weight'].size(0))
-
-    logger.info('--------------UnPrune Model--------------')
-    logger.info('Channels: %d'%(orichannel))
-    logger.info('Params: %.2f M '%(oriparams/1000000))
-    logger.info('FLOPS: %.2f M '%(oriflops/1000000))
-
-    logger.info('--------------Prune Model--------------')
-    logger.info('Channels:%d'%(channel))
-    logger.info('Params: %.2f M'%(params/1000000))
-    logger.info('FLOPS: %.2f M'%(flops/1000000))
-
-
-    logger.info('--------------Compress Rate--------------')
-    logger.info('Channels Prune Rate: %d/%d (%.2f%%)' % (channel, orichannel, 100. * (orichannel - channel) / orichannel))
-    logger.info('Params Compress Rate: %.2f M/%.2f M(%.2f%%)' % (params/1000000, oriparams/1000000, 100. * (oriparams- params) / oriparams))
-    logger.info('FLOPS Compress Rate: %.2f M/%.2f M(%.2f%%)' % (flops/1000000, oriflops/1000000, 100. * (oriflops- flops) / oriflops))
 
     
 if __name__ == '__main__':
