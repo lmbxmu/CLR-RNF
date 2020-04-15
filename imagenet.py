@@ -6,6 +6,7 @@ import utils.common as utils
 
 import os
 import time
+import math
 from data import imagenet_dali
 from importlib import import_module
 from model.resnet_imagenet import BasicBlock, Bottleneck
@@ -272,19 +273,21 @@ def graph_mobilenet_v2(pr_target):
     cfg = []
     centroids_state_dict = {}
     prune_state_dict = []
-    indices = []
+
 
     current_index = 0
     # Sort the weights and get the pruning threshold
     for name, module in origin_model.named_modules():
 
         if isinstance(module, InvertedResidual):
-            conv1_weight = module.conv[0].weight.data
+            conv1_weight = module.conv[3].weight.data
             if len(module.conv) == 5: #expand_ratio = 1
                 weights.append(conv1_weight.view(-1))
-            else:              
-                conv2_weight = module.conv[3].weight.data
+            else:        
+                conv2_weight = module.conv[6].weight.data      
                 weights.append(torch.cat((conv1_weight.view(-1),conv2_weight.view(-1)),0))
+
+    weights.append(origin_model.state_dict()['features.18.0.weight'].view(-1))            
 
     all_weights = torch.cat(weights, 0)
     preserve_num = int(all_weights.size(0) * (1 - pr_target))
@@ -294,85 +297,101 @@ def graph_mobilenet_v2(pr_target):
     # Based on the pruning threshold, the prune cfg of each layer is obtained
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight), threshold)).item() / weight.size(0))
-    print(len(pr_cfg))
+    #print(pr_cfg)
 
     # Get the preseverd filters after pruning by graph method based on pruning proportion
     for name, module in origin_model.named_modules():
 
         if isinstance(module, InvertedResidual):
-            print(current_index)
-            if len(module.conv) == 5: #expand_ratio = 1
+    
+            if len(module.conv) == 5: #expand_ratio = 1 first layer
 
-
-                conv1_weight = module.conv[0].weight.data
+                conv1_weight = module.conv[3].weight.data
                 _, _, centroids, indice = graph_weight(conv1_weight, int(conv1_weight.size(0) * (1 - pr_cfg[current_index])),logger)
-                cfg.append(len(centroids))
-                cfg.append(0) #assume baseblock has three conv layer
-                centroids_state_dict[name + '.conv.0.weight'] = centroids
-                if args.init_method == 'random_project':
-                    centroids_state_dict[name + '.conv.3.weight'] = random_project(module.conv[3].weight.data, len(centroids))
-                else:
-                    centroids_state_dict[name + '.conv.3.weight'] = direct_project(module.conv[3].weight.data, indice)
+                centroids_state_dict[name + '.conv.3.weight'] = centroids
+                lastindice = indice
 
-                prune_state_dict.append(name + 'conv.1.weight')
-                prune_state_dict.append(name + 'conv.1.bias')
-                prune_state_dict.append(name + 'conv.1.running_var')
-                prune_state_dict.append(name + 'conv.1.running_mean')
-                current_index+=1
+                prune_state_dict.append(name + '.conv.4.weight')
+                prune_state_dict.append(name + '.conv.4.bias')
+                prune_state_dict.append(name + '.conv.4.running_var')
+                prune_state_dict.append(name + '.conv.4.running_mean')
+                current_index += 1
 
             else:
-                conv1_weight = module.conv[0].weight.data
-                _, _, centroids, indice = graph_weight(conv1_weight,
-                                                       int(conv1_weight.size(0) * (1 - pr_cfg[current_index-1])), logger)
-                cfg.append(len(centroids))
-                indices.append(indice)
-                centroids_state_dict[name + '.conv.0.weight'] = centroids
 
-                prune_state_dict.append(name + 'conv.1.weight')
-                prune_state_dict.append(name + 'conv.1.bias')
-                prune_state_dict.append(name + 'conv.1.running_var')
-                prune_state_dict.append(name + 'conv.1.running_mean')
+                conv1_weight = module.conv[0].weight.data
+                _, _, centroids, indice1 = graph_weight(conv1_weight,
+                                                       int(conv1_weight.size(0) * (1 - pr_cfg[current_index-1])), logger)
+
+                centroids_state_dict[name + '.conv.0.weight'] = centroids.reshape((-1, conv1_weight.size(1), conv1_weight.size(2), conv1_weight.size(3)))
+                prune_state_dict.append(name + '.conv.1.weight')
+                prune_state_dict.append(name + '.conv.1.bias')
+                prune_state_dict.append(name + '.conv.1.running_var')
+                prune_state_dict.append(name + '.conv.1.running_mean')
 
                 conv2_weight = module.conv[3].weight.data
-                _, _, centroids, indice = graph_weight(conv2_weight,
-                                                       int(conv2_weight.size(0) * (1 - pr_cfg[current_index])), logger)
-                cfg.append(len(centroids))
-                centroids_state_dict[name + '.conv.3.weight'] = centroids.reshape(
-                    (-1, conv2_weight.size(1), conv2_weight.size(2), conv2_weight.size(3)))
-
-                if args.init_method == 'random_project':
-                    centroids_state_dict[name + '.conv.6.weight'] = random_project(module.conv[6].weight.data, len(centroids))
-                else:
-                    centroids_state_dict[name + '.conv.6.weight'] = direct_project(module.conv[6].weight.data, indice)
-
+                _, _, centroids, indice2 = graph_weight(conv2_weight,
+                                                       int(conv2_weight.size(0) * (1 - pr_cfg[current_index-1])), logger)
+                centroids_state_dict[name + '.conv.3.weight'] = centroids
                 prune_state_dict.append(name + '.conv.4.weight')
                 prune_state_dict.append(name + '.conv.4.bias')
                 prune_state_dict.append(name + '.conv.4.running_mean')
                 prune_state_dict.append(name + '.conv.4.running_var')
 
+                conv3_weight = module.conv[6].weight.data
+                _, _, centroids, indice3 = graph_weight(conv3_weight,
+                                                       int(conv3_weight.size(0) * (1 - pr_cfg[current_index])), logger)
+                centroids_state_dict[name + '.conv.6.weight'] = centroids.reshape((-1, conv3_weight.size(1), conv3_weight.size(2), conv3_weight.size(3)))
+                prune_state_dict.append(name + '.conv.7.weight')
+                prune_state_dict.append(name + '.conv.7.bias')
+                prune_state_dict.append(name + '.conv.7.running_mean')
+                prune_state_dict.append(name + '.conv.7.running_var')
+
+                if args.init_method == 'random_project':
+                    centroids_state_dict[name + '.conv.0.weight'] = random_project(centroids_state_dict[name + '.conv.0.weight'], len(lastindice))
+                    centroids_state_dict[name + '.conv.6.weight'] = random_project(centroids_state_dict[name + '.conv.6.weight'], len(indice2))
+                else:
+                    centroids_state_dict[name + '.conv.0.weight'] = direct_project(centroids_state_dict[name + '.conv.0.weight'], lastindice)
+                    centroids_state_dict[name + '.conv.6.weight'] = direct_project(centroids_state_dict[name + '.conv.6.weight'], indice2)
+
+                lastindice = indice3
                 current_index += 1
-                
-    model = import_module(f'model.{args.arch}').mobilenet_v2(layer_cfg=cfg).to(device)
+
+    #LastLayer
+    conv_weight = origin_model.state_dict()['features.18.0.weight']
+    _, _, centroids, indice = graph_weight(conv_weight, int(conv_weight.size(0) * (1 - pr_cfg[current_index])),logger)
+    centroids_state_dict['features.18.0.weight'] = centroids.reshape((-1, conv_weight.size(1), conv_weight.size(2), conv_weight.size(3)))
+
+    prune_state_dict.append('features.18.1.weight')
+    prune_state_dict.append('features.18.1.bias')
+    prune_state_dict.append('features.18.1.running_var')
+    prune_state_dict.append('features.18.1.running_mean')
+    prune_state_dict.append('classifier.1.weight')
+    prune_state_dict.append('classifier.1.bias')
+
+    if args.init_method == 'random_project':
+        centroids_state_dict['features.18.0.weight'] = random_project(centroids_state_dict['features.18.0.weight'], len(lastindice))
+    else:
+        centroids_state_dict['features.18.0.weight'] = direct_project(centroids_state_dict['features.18.0.weight'], lastindice)
+
+    model = import_module(f'model.{args.arch}').mobilenet_v2(layer_cfg=pr_cfg).to(device)
+
     if args.init_method == 'random_project' or args.init_method == 'direct_project':
         pretrain_state_dict = origin_model.state_dict()
         state_dict = model.state_dict()
         centroids_state_dict_keys = list(centroids_state_dict.keys())
 
-        index = 0
-        for k, v in centroids_state_dict.items():
+        for param_tensor in state_dict:
+            print(param_tensor,'\t',state_dict[param_tensor].size())
 
-            if k.endswith('.conv.3.weight'):
-                if args.init_method == 'random_project':
-                    centroids_state_dict[k] = random_project(torch.FloatTensor(centroids_state_dict[k]),
-                                                             len(indices[index]))
-                else:
-                    centroids_state_dict[k] = direct_project(torch.FloatTensor(centroids_state_dict[k]), indices[index])
-                index += 1
+        for param_tensor in centroids_state_dict:
+            print(param_tensor,'\t',centroids_state_dict[param_tensor].size())
 
         for k, v in state_dict.items():
             if k in prune_state_dict:
                 continue
             elif k in centroids_state_dict_keys:
+                print(k)
                 state_dict[k] = torch.FloatTensor(centroids_state_dict[k]).view_as(state_dict[k])
             else:
                 state_dict[k] = pretrain_state_dict[k]
@@ -395,7 +414,7 @@ def train(model, optimizer, trainLoader, args, epoch, topk=(1,)):
         inputs = batch_data[0]['data'].to(device)
         targets = batch_data[0]['label'].squeeze().long().to(device)
         #i += 1
-        #if i > 10:
+        #if i > 2:
             #break
         adjust_learning_rate(optimizer, epoch, batch, trainLoader._size // args.train_batch_size)
 
@@ -438,8 +457,8 @@ def test(model, testLoader, topk=(1,)):
         #i = 0
         for batch_idx, batch_data in enumerate(testLoader):
             #i += 1
-            #if i > 10:
-            #    break
+            #if i > 2:
+                #break
             inputs = batch_data[0]['data'].to(device)
             targets = batch_data[0]['label'].squeeze().long().to(device)
             outputs = model(inputs)
@@ -459,27 +478,41 @@ def test(model, testLoader, topk=(1,)):
     return accuracy.avg, top5_accuracy.avg
 
 def adjust_learning_rate(optimizer, epoch, step, len_epoch):
+    if args.arch == 'resnet_imagenet':
+        factor = epoch // 30
 
-    factor = epoch // 30
+        if epoch >= 80:
+            factor = factor + 1
 
-    if epoch >= 80:
-        factor = factor + 1
+        lr = args.lr * (0.1 ** factor)
 
-    lr = args.lr * (0.1 ** factor)
+        #Warmup
+        if epoch < 5:
+            lr = lr * float(1 + step + epoch * len_epoch) / (5. * len_epoch)
 
-    #Warmup
-    if epoch < 5:
-        lr = lr * float(1 + step + epoch * len_epoch) / (5. * len_epoch)
-
-    for param_group in optimizer.param_groups:
-        param_group['lr'] = lr
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = lr
+    else:
+        if args.lr_type == 'cos':  # cos without warm-up
+            lr = 0.5 * args.lr * (1 + math.cos(math.pi * epoch / args.num_epochs))
+        elif args.lr_type == 'exp':
+            step = 1
+            decay = 0.96
+            lr = args.lr * (decay ** (epoch // step))
+        elif args.lr_type == 'fixed':
+            lr = args.lr
+        else:
+            raise NotImplementedError
+        print('=> lr: {}'.format(lr))
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = lr
 
 def main():
     start_epoch = 0
     best_top1_acc = 0.0
     best_top5_acc = 0.0
 
-    #test(origin_model, testLoader, topk=(1, 5))
+    test(origin_model, testLoader, topk=(1, 5))
     print('==> Building Model..')
     if args.pretrain_model is None or not os.path.exists(args.pretrain_model):
         raise ('Pretrained_model path should be exist!')

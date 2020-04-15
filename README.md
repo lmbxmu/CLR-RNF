@@ -33,7 +33,6 @@ python imagenet.py
 --arch resnet_imagenet 
 --cfg resnet50 
 --lr 0.1 
---lr_decay_step 30 60 
 --num_epochs 90 
 --train_batch_size 256 
 --weight_decay 1e-4 
@@ -72,6 +71,7 @@ python cal_graph_loss.py
 | ------------ | ------------------------------------------------------------ |
 | Mobilenet-v1 | https://hanlab.mit.edu/projects/amc/external/mobilenet_imagenet.pth.tar |
 | Mobilenet-v2 | https://drive.google.com/open?id=1jlto6HRVD3ipNkAl1lNhDbkBp7HylaqR |
+wd 4e-5 epoch 150 lr 0.1 
 
 
 ## Other Arguments
@@ -93,5 +93,6 @@ optional arguments:
   --init_method INIT_METHOD
                         Initital method of pruned model. default:direct.
                         optimal:random_project
-  --pr_targt            Target prune ratio of parameters
+  --pr_target            Target prune ratio of parameters
+  --lr_tyoe             only for mobilenet: lr scheduler (exp/cos/step3/fixed)
 ```

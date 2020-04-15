@@ -20,12 +20,11 @@ def conv_1x1_bn(inp, oup):
 
 
 class InvertedResidual(nn.Module):
-    def __init__(self, inp, oup, stride, expand_ratio):
+    def __init__(self, inp, hidden_dim, oup, stride, expand_ratio):
         super(InvertedResidual, self).__init__()
         self.stride = stride
         assert stride in [1, 2]
 
-        hidden_dim = round(inp * expand_ratio)
         self.use_res_connect = self.stride == 1 and inp == oup
 
         if expand_ratio == 1:
@@ -65,8 +64,6 @@ class MobileNetV2(nn.Module):
         super(MobileNetV2, self).__init__()
         block = InvertedResidual
         layer_index = 0
-        if layer_cfg == None:
-            layer_cfg = [1] * 17
         input_channel = 32
         last_channel = 1280
         interverted_residual_setting = [
@@ -96,22 +93,41 @@ class MobileNetV2(nn.Module):
         self.last_channel = int(last_channel * width_mult) if width_mult > 1.0 else last_channel
         self.features = [conv_bn(3, input_channel, 2)]
         # building inverted residual blocks
+        lastc = 32
         for t, c, n, s in interverted_residual_setting:
-            output_channel = int(c * layer_cfg[layer_index])
-            self.features.append(block(input_channel,output_channel, 1, expand_ratio=t))
+            if layer_cfg == None:
+                output_channel = int(c * width_mult)
+                hidden_dim = input_channel * t
+            else:
+                output_channel = int(c * (1 - layer_cfg[layer_index]))
+                if layer_index == 0:
+                    hidden_dim = 32
+                else:
+                    hidden_dim = int(lastc * t * (1 - layer_cfg[layer_index - 1]))
+            self.features.append(block(input_channel,hidden_dim,output_channel, s, expand_ratio=t))
             input_channel = output_channel
-            layer_index+=1
+            layer_index += 1
+            lastc = c
 
         # building last several layers
-        self.features.append(conv_1x1_bn(input_channel, self.last_channel))
+        if layer_cfg == None:
+            self.features.append(conv_1x1_bn(input_channel, self.last_channel))
+        else:
+            self.features.append(conv_1x1_bn(input_channel, int(self.last_channel*(1-layer_cfg[layer_index]))))
         # make it nn.Sequential
         self.features = nn.Sequential(*self.features)
 
         # building classifier
-        self.classifier = nn.Sequential(
+        if layer_cfg == None:
+            self.classifier = nn.Sequential(
             nn.Dropout(0.2),
             nn.Linear(self.last_channel, n_class),
-        )
+            )
+        else:
+            self.classifier = nn.Sequential(
+                nn.Dropout(0.2),
+                nn.Linear(int(self.last_channel*(1-layer_cfg[layer_index])), n_class),
+            )
 
         self._initialize_weights()
 
@@ -139,7 +155,7 @@ def mobilenet_v2(layer_cfg=None):
     return MobileNetV2(layer_cfg=layer_cfg)
 
 if __name__ == "__main__":
-    model = MobileNetV2(layer_cfg=[0.5]*17)
+    model = MobileNetV2(layer_cfg=[0]*18)
     '''
     for name, module in model.named_modules():
         if isinstance(module, nn.Conv2d):

@@ -5,6 +5,7 @@ from utils.options import args
 from model.resnet_cifar import ResBasicBlock
 from model.googlenet import Inception
 from model.resnet_imagenet import BasicBlock, Bottleneck
+from model.mobilenet_v2 import InvertedResidual
 import utils.common as utils
 
 import os
@@ -33,7 +34,7 @@ elif args.arch == 'mobilenet_v1':
     origin_model.load_state_dict(ckpt['state_dict'])
 elif args.arch == 'mobilenet_v2':
     origin_model = import_module(f'model.{args.arch}').mobilenet_v2().to(device)
-    origin_model.load_state_dict(ckpt['state_dict'])
+    origin_model.load_state_dict(ckpt)
 elif args.arch == 'vgg_cifar':
     origin_model = import_module(f'model.{args.arch}').VGG(args.cfg).to(device)
     origin_model.load_state_dict(ckpt['state_dict'])
@@ -402,6 +403,115 @@ def graph_mobilenet_v1(pr_target):
 
     return model
 
+def graph_mobilenet_v2(pr_target):
+    pr_cfg = []
+    weights = []
+
+    cfg = []
+    centroids_state_dict = {}
+    prune_state_dict = []
+
+
+    current_index = 0
+    # Sort the weights and get the pruning threshold
+    for name, module in origin_model.named_modules():
+
+        if isinstance(module, InvertedResidual):
+            conv1_weight = module.conv[3].weight.data
+            if len(module.conv) == 5: #expand_ratio = 1
+                weights.append(conv1_weight.view(-1))
+            else:        
+                conv2_weight = module.conv[6].weight.data      
+                weights.append(torch.cat((conv1_weight.view(-1),conv2_weight.view(-1)),0))
+
+    weights.append(origin_model.state_dict()['features.18.0.weight'].view(-1))            
+
+    all_weights = torch.cat(weights, 0)
+    preserve_num = int(all_weights.size(0) * (1 - pr_target))
+    preserve_weight, _ = torch.topk(torch.abs(all_weights), preserve_num)
+    threshold = preserve_weight[preserve_num - 1]
+
+    # Based on the pruning threshold, the prune cfg of each layer is obtained
+    for weight in weights:
+        pr_cfg.append(torch.sum(torch.lt(torch.abs(weight), threshold)).item() / weight.size(0))
+    #print(pr_cfg)
+
+    # Get the preseverd filters after pruning by graph method based on pruning proportion
+    for name, module in origin_model.named_modules():
+
+        if isinstance(module, InvertedResidual):
+    
+            if len(module.conv) == 5: #expand_ratio = 1 first layer
+
+                conv1_weight = module.conv[3].weight.data
+                _, _, centroids, indice = graph_weight(conv1_weight, int(conv1_weight.size(0) * (1 - pr_cfg[current_index])),logger)
+                centroids_state_dict[name + '.conv.3.weight'] = centroids
+                lastindice = indice
+
+                prune_state_dict.append(name + '.conv.4.weight')
+                prune_state_dict.append(name + '.conv.4.bias')
+                prune_state_dict.append(name + '.conv.4.running_var')
+                prune_state_dict.append(name + '.conv.4.running_mean')
+                current_index += 1
+
+            else:
+
+                conv1_weight = module.conv[0].weight.data
+                _, _, centroids, indice1 = graph_weight(conv1_weight,
+                                                       int(conv1_weight.size(0) * (1 - pr_cfg[current_index-1])), logger)
+
+                centroids_state_dict[name + '.conv.0.weight'] = centroids.reshape((-1, conv1_weight.size(1), conv1_weight.size(2), conv1_weight.size(3)))
+                prune_state_dict.append(name + '.conv.1.weight')
+                prune_state_dict.append(name + '.conv.1.bias')
+                prune_state_dict.append(name + '.conv.1.running_var')
+                prune_state_dict.append(name + '.conv.1.running_mean')
+
+                conv2_weight = module.conv[3].weight.data
+                _, _, centroids, indice2 = graph_weight(conv2_weight,
+                                                       int(conv2_weight.size(0) * (1 - pr_cfg[current_index-1])), logger)
+                centroids_state_dict[name + '.conv.3.weight'] = centroids
+                prune_state_dict.append(name + '.conv.4.weight')
+                prune_state_dict.append(name + '.conv.4.bias')
+                prune_state_dict.append(name + '.conv.4.running_mean')
+                prune_state_dict.append(name + '.conv.4.running_var')
+
+                conv3_weight = module.conv[6].weight.data
+                _, _, centroids, indice3 = graph_weight(conv3_weight,
+                                                       int(conv3_weight.size(0) * (1 - pr_cfg[current_index])), logger)
+                centroids_state_dict[name + '.conv.6.weight'] = centroids.reshape((-1, conv3_weight.size(1), conv3_weight.size(2), conv3_weight.size(3)))
+                prune_state_dict.append(name + '.conv.7.weight')
+                prune_state_dict.append(name + '.conv.7.bias')
+                prune_state_dict.append(name + '.conv.7.running_mean')
+                prune_state_dict.append(name + '.conv.7.running_var')
+
+                if args.init_method == 'random_project':
+                    centroids_state_dict[name + '.conv.0.weight'] = random_project(centroids_state_dict[name + '.conv.0.weight'], len(lastindice))
+                    centroids_state_dict[name + '.conv.6.weight'] = random_project(centroids_state_dict[name + '.conv.6.weight'], len(indice2))
+                else:
+                    centroids_state_dict[name + '.conv.0.weight'] = direct_project(centroids_state_dict[name + '.conv.0.weight'], lastindice)
+                    centroids_state_dict[name + '.conv.6.weight'] = direct_project(centroids_state_dict[name + '.conv.6.weight'], indice2)
+
+                lastindice = indice3
+                current_index += 1
+
+    #LastLayer
+    conv_weight = origin_model.state_dict()['features.18.0.weight']
+    _, _, centroids, indice = graph_weight(conv_weight, int(conv_weight.size(0) * (1 - pr_cfg[current_index])),logger)
+    centroids_state_dict['features.18.0.weight'] = centroids.reshape((-1, conv_weight.size(1), conv_weight.size(2), conv_weight.size(3)))
+
+    prune_state_dict.append('features.18.1.weight')
+    prune_state_dict.append('features.18.1.bias')
+    prune_state_dict.append('features.18.1.running_var')
+    prune_state_dict.append('features.18.1.running_mean')
+
+    if args.init_method == 'random_project':
+        centroids_state_dict['features.18.0.weight'] = random_project(centroids_state_dict['features.18.0.weight'], len(lastindice))
+    else:
+        centroids_state_dict['features.18.0.weight'] = direct_project(centroids_state_dict['features.18.0.weight'], lastindice)
+
+    model = import_module(f'model.{args.arch}').mobilenet_v2(layer_cfg=pr_cfg).to(device)
+    return model
+
 def main():
     print('==> Building Model..')
 
@@ -413,6 +523,10 @@ def main():
         model = graph_googlenet(args.pr_target)
     elif args.arch == 'resnet_imagenet':
         model = graph_resnet_imagenet(args.pr_target)
+    elif args.arch == 'mobilenet_v1':
+        model = graph_mobilenet_v1(args.pr_target)
+    elif args.arch == 'mobilenet_v2':
+        model = graph_mobilenet_v2(args.pr_target)
     else:
         raise('arch not exist!')
     print("Graph Down!")
@@ -420,7 +534,10 @@ def main():
     channel = 0
 
     #Calculate the flops and params of origin_model & pruned_model
-    Input = torch.randn(1, 3, 224, 224).to(device)
+    if args.dataset == 'cifar':
+        Input = torch.randn(1, 3, 32, 32).to(device)
+    else:
+        Input = torch.randn(1, 3, 224, 224).to(device)
     oriflops, oriparams = profile(origin_model, inputs=(Input, ))
     flops, params = profile(model, inputs=(Input, ))
 

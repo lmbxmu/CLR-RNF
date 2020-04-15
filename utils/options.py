@@ -76,6 +76,13 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    '--lr_type',
+    default='exp', 
+    type=str, 
+    help='lr scheduler (exp/cos/step3/fixed)'
+)
+
+parser.add_argument(
     '--lr_decay_step',
     type=int,
     nargs='+',
