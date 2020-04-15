@@ -381,17 +381,16 @@ def graph_mobilenet_v2(pr_target):
         state_dict = model.state_dict()
         centroids_state_dict_keys = list(centroids_state_dict.keys())
 
-        for param_tensor in state_dict:
-            print(param_tensor,'\t',state_dict[param_tensor].size())
+        #for param_tensor in state_dict:
+            #print(param_tensor,'\t',state_dict[param_tensor].size())
 
-        for param_tensor in centroids_state_dict:
-            print(param_tensor,'\t',centroids_state_dict[param_tensor].size())
+        #for param_tensor in centroids_state_dict:
+            #print(param_tensor,'\t',centroids_state_dict[param_tensor].size())
 
         for k, v in state_dict.items():
             if k in prune_state_dict:
                 continue
             elif k in centroids_state_dict_keys:
-                print(k)
                 state_dict[k] = torch.FloatTensor(centroids_state_dict[k]).view_as(state_dict[k])
             else:
                 state_dict[k] = pretrain_state_dict[k]
