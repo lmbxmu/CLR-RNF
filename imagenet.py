@@ -273,9 +273,9 @@ def graph_mobilenet_v2(pr_target):
     cfg = []
     centroids_state_dict = {}
     prune_state_dict = []
-
-
     current_index = 0
+    cat_cfg = [2,3,4,3,3,1]
+    c_index, i_index = 0, 0 
     # Sort the weights and get the pruning threshold
     for name, module in origin_model.named_modules():
 
@@ -283,11 +283,20 @@ def graph_mobilenet_v2(pr_target):
             conv1_weight = module.conv[3].weight.data
             if len(module.conv) == 5: #expand_ratio = 1
                 weights.append(conv1_weight.view(-1))
-            else:        
-                conv2_weight = module.conv[6].weight.data      
-                weights.append(torch.cat((conv1_weight.view(-1),conv2_weight.view(-1)),0))
+            else:   
+                conv2_weight = module.conv[6].weight.data       
+                if i_index == 0:
+                    conv_weight = torch.cat((conv1_weight.view(-1),conv2_weight.view(-1)),0)
+                else:
+                    conv_weight = torch.cat((conv_weight,torch.cat((conv1_weight.view(-1),conv2_weight.view(-1)),0)),0)
+                i_index += 1
+                if i_index == cat_cfg[c_index]:
+                    weights.append(conv_weight)  
+                    c_index += 1
+                    i_index = 0
+                
 
-    weights.append(origin_model.state_dict()['features.18.0.weight'].view(-1))            
+    #weights.append(origin_model.state_dict()['features.18.0.weight'].view(-1))  #lastlayer          
 
     all_weights = torch.cat(weights, 0)
     preserve_num = int(all_weights.size(0) * (1 - pr_target))
@@ -298,6 +307,12 @@ def graph_mobilenet_v2(pr_target):
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight), threshold)).item() / weight.size(0))
     #print(pr_cfg)
+    graph_cfg = []
+    graph_cfg.append(pr_cfg[0])
+    for i in range(6):
+        for j in range(cat_cfg[i]):
+            graph_cfg.append(pr_cfg[i+1])
+    #print(graph_cfg)
 
     # Get the preseverd filters after pruning by graph method based on pruning proportion
     for name, module in origin_model.named_modules():
@@ -307,7 +322,7 @@ def graph_mobilenet_v2(pr_target):
             if len(module.conv) == 5: #expand_ratio = 1 first layer
 
                 conv1_weight = module.conv[3].weight.data
-                _, _, centroids, indice = graph_weight(conv1_weight, int(conv1_weight.size(0) * (1 - pr_cfg[current_index])),logger)
+                _, _, centroids, indice = graph_weight(conv1_weight, int(conv1_weight.size(0) * (1 - graph_cfg[current_index])),logger)
                 centroids_state_dict[name + '.conv.3.weight'] = centroids
                 lastindice = indice
 
@@ -321,7 +336,7 @@ def graph_mobilenet_v2(pr_target):
 
                 conv1_weight = module.conv[0].weight.data
                 _, _, centroids, indice1 = graph_weight(conv1_weight,
-                                                       int(conv1_weight.size(0) * (1 - pr_cfg[current_index-1])), logger)
+                                                       int(conv1_weight.size(0) * (1 - graph_cfg[current_index-1])), logger)
 
                 centroids_state_dict[name + '.conv.0.weight'] = centroids.reshape((-1, conv1_weight.size(1), conv1_weight.size(2), conv1_weight.size(3)))
                 prune_state_dict.append(name + '.conv.1.weight')
@@ -331,7 +346,7 @@ def graph_mobilenet_v2(pr_target):
 
                 conv2_weight = module.conv[3].weight.data
                 _, _, centroids, indice2 = graph_weight(conv2_weight,
-                                                       int(conv2_weight.size(0) * (1 - pr_cfg[current_index-1])), logger)
+                                                       int(conv2_weight.size(0) * (1 - graph_cfg[current_index-1])), logger)
                 centroids_state_dict[name + '.conv.3.weight'] = centroids
                 prune_state_dict.append(name + '.conv.4.weight')
                 prune_state_dict.append(name + '.conv.4.bias')
@@ -340,7 +355,7 @@ def graph_mobilenet_v2(pr_target):
 
                 conv3_weight = module.conv[6].weight.data
                 _, _, centroids, indice3 = graph_weight(conv3_weight,
-                                                       int(conv3_weight.size(0) * (1 - pr_cfg[current_index])), logger)
+                                                       int(conv3_weight.size(0) * (1 - graph_cfg[current_index])), logger)
                 centroids_state_dict[name + '.conv.6.weight'] = centroids.reshape((-1, conv3_weight.size(1), conv3_weight.size(2), conv3_weight.size(3)))
                 prune_state_dict.append(name + '.conv.7.weight')
                 prune_state_dict.append(name + '.conv.7.bias')
@@ -356,7 +371,7 @@ def graph_mobilenet_v2(pr_target):
 
                 lastindice = indice3
                 current_index += 1
-
+    '''
     #LastLayer
     conv_weight = origin_model.state_dict()['features.18.0.weight']
     _, _, centroids, indice = graph_weight(conv_weight, int(conv_weight.size(0) * (1 - pr_cfg[current_index])),logger)
@@ -368,13 +383,14 @@ def graph_mobilenet_v2(pr_target):
     prune_state_dict.append('features.18.1.running_mean')
     prune_state_dict.append('classifier.1.weight')
     prune_state_dict.append('classifier.1.bias')
+    '''
 
     if args.init_method == 'random_project':
-        centroids_state_dict['features.18.0.weight'] = random_project(centroids_state_dict['features.18.0.weight'], len(lastindice))
+        centroids_state_dict['features.18.0.weight'] = random_project(origin_model.state_dict()['features.18.0.weight'], len(lastindice))
     else:
-        centroids_state_dict['features.18.0.weight'] = direct_project(centroids_state_dict['features.18.0.weight'], lastindice)
-
-    model = import_module(f'model.{args.arch}').mobilenet_v2(layer_cfg=pr_cfg).to(device)
+        centroids_state_dict['features.18.0.weight'] = direct_project(origin_model.state_dict()['features.18.0.weight'], lastindice)
+    
+    model = import_module(f'model.{args.arch}').mobilenet_v2(layer_cfg=graph_cfg).to(device)
 
     if args.init_method == 'random_project' or args.init_method == 'direct_project':
         pretrain_state_dict = origin_model.state_dict()

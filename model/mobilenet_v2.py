@@ -26,6 +26,7 @@ class InvertedResidual(nn.Module):
         assert stride in [1, 2]
 
         self.use_res_connect = self.stride == 1 and inp == oup
+        #print(self.use_res_connect)
 
         if expand_ratio == 1:
             self.conv = nn.Sequential(
@@ -86,6 +87,7 @@ class MobileNetV2(nn.Module):
             [6, 160, 1, 1],
             [6, 320, 1, 1],
         ]
+        
 
         # building first layer
         assert input_size % 32 == 0
@@ -110,14 +112,22 @@ class MobileNetV2(nn.Module):
             lastc = c
 
         # building last several layers
+        self.features.append(conv_1x1_bn(input_channel, self.last_channel))
+        '''
         if layer_cfg == None:
             self.features.append(conv_1x1_bn(input_channel, self.last_channel))
         else:
             self.features.append(conv_1x1_bn(input_channel, int(self.last_channel*(1-layer_cfg[layer_index]))))
+        '''
         # make it nn.Sequential
         self.features = nn.Sequential(*self.features)
 
         # building classifier
+        self.classifier = nn.Sequential(
+            nn.Dropout(0.2),
+            nn.Linear(self.last_channel, n_class),
+            )
+        '''
         if layer_cfg == None:
             self.classifier = nn.Sequential(
             nn.Dropout(0.2),
@@ -128,6 +138,7 @@ class MobileNetV2(nn.Module):
                 nn.Dropout(0.2),
                 nn.Linear(int(self.last_channel*(1-layer_cfg[layer_index])), n_class),
             )
+        '''
 
         self._initialize_weights()
 
@@ -155,7 +166,8 @@ def mobilenet_v2(layer_cfg=None):
     return MobileNetV2(layer_cfg=layer_cfg)
 
 if __name__ == "__main__":
-    model = MobileNetV2(layer_cfg=[0]*18)
+    model = MobileNetV2(layer_cfg=[0]*17)
+
     '''
     for name, module in model.named_modules():
         if isinstance(module, nn.Conv2d):
