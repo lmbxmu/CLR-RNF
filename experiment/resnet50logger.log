@@ -1,0 +1,517 @@
+03/29 12:58:48 AM | Test Loss 0.6411	Top1 83.55%	Top5 95.74%	Time 6.70s
+
+03/29 12:59:46 AM | Test Loss 0.6411	Top1 83.55%	Top5 95.74%	Time 7.44s
+
+03/29 01:00:54 AM | Test Loss 0.6411	Top1 83.55%	Top5 95.74%	Time 8.24s
+
+03/29 01:04:00 AM | Test Loss 0.5931	Top1 84.69%	Top5 95.62%	Time 1.08s
+
+03/29 01:04:26 AM | Test Loss 8.6454	Top1 0.00%	Top5 0.00%	Time 0.52s
+
+03/29 01:04:28 AM | Test Loss 16079.1014	Top1 0.00%	Top5 0.00%	Time 0.50s
+
+03/29 01:04:30 AM | Test Loss 247132.9195	Top1 0.00%	Top5 0.00%	Time 0.58s
+
+03/29 01:04:32 AM | Test Loss 1518.9015	Top1 0.00%	Top5 0.00%	Time 0.51s
+
+03/29 01:04:35 AM | Test Loss 50533.4369	Top1 0.00%	Top5 0.00%	Time 0.55s
+
+03/29 01:04:37 AM | Test Loss 132.0482	Top1 0.00%	Top5 0.00%	Time 0.58s
+
+03/29 01:04:39 AM | Test Loss 8.3760	Top1 0.00%	Top5 0.00%	Time 0.54s
+
+03/29 01:04:41 AM | Test Loss 30.3280	Top1 0.00%	Top5 0.00%	Time 0.62s
+
+03/29 01:04:43 AM | Test Loss 14.7297	Top1 0.00%	Top5 0.00%	Time 0.51s
+
+03/29 01:04:46 AM | Test Loss 7.6938	Top1 0.00%	Top5 0.00%	Time 0.55s
+
+03/29 01:04:48 AM | Test Loss 6.8563	Top1 0.00%	Top5 15.62%	Time 0.53s
+
+03/29 01:04:50 AM | Test Loss 6.8665	Top1 0.00%	Top5 0.00%	Time 0.41s
+
+03/29 01:04:51 AM | Test Loss 6.9662	Top1 0.00%	Top5 0.00%	Time 0.41s
+
+03/29 01:04:53 AM | Test Loss 7.4823	Top1 0.00%	Top5 0.00%	Time 0.46s
+
+03/29 01:04:55 AM | Test Loss 12.1475	Top1 0.00%	Top5 8.12%	Time 0.49s
+
+03/29 01:04:57 AM | Test Loss 8.4541	Top1 0.00%	Top5 0.00%	Time 0.35s
+
+03/29 01:04:59 AM | Test Loss 8.6321	Top1 0.00%	Top5 0.00%	Time 0.66s
+
+03/29 01:05:02 AM | Test Loss 7.2073	Top1 0.00%	Top5 0.00%	Time 0.91s
+
+03/29 01:05:05 AM | Test Loss 6.8763	Top1 0.00%	Top5 0.00%	Time 1.19s
+
+03/29 01:05:08 AM | Test Loss 7.0332	Top1 0.00%	Top5 0.00%	Time 1.16s
+
+03/29 01:05:12 AM | Test Loss 33.2880	Top1 0.00%	Top5 0.00%	Time 1.33s
+
+03/29 01:05:15 AM | Test Loss 7.0205	Top1 0.00%	Top5 0.00%	Time 1.01s
+
+03/29 01:05:18 AM | Test Loss 7.5334	Top1 0.00%	Top5 0.00%	Time 1.12s
+
+03/29 01:05:21 AM | Test Loss 6.9363	Top1 0.00%	Top5 0.00%	Time 1.64s
+
+03/29 01:05:25 AM | Test Loss 7.3021	Top1 0.00%	Top5 0.00%	Time 1.16s
+
+03/29 01:05:28 AM | Test Loss 6.9188	Top1 0.00%	Top5 0.00%	Time 1.23s
+
+03/29 01:05:31 AM | Test Loss 7.1864	Top1 0.00%	Top5 0.00%	Time 1.20s
+
+03/29 01:05:34 AM | Test Loss 7.0260	Top1 0.00%	Top5 0.00%	Time 0.94s
+
+03/29 01:05:38 AM | Test Loss 7.0436	Top1 0.00%	Top5 0.00%	Time 1.21s
+
+03/29 01:05:40 AM | Test Loss 7.1355	Top1 0.00%	Top5 0.00%	Time 0.67s
+
+03/29 01:05:43 AM | Test Loss 6.9956	Top1 0.00%	Top5 0.00%	Time 0.62s
+
+03/29 01:05:45 AM | Test Loss 6.9184	Top1 0.00%	Top5 0.00%	Time 0.56s
+
+03/29 01:05:47 AM | Test Loss 7.6327	Top1 0.00%	Top5 0.00%	Time 0.50s
+
+03/29 01:05:50 AM | Test Loss 7.0603	Top1 0.00%	Top5 0.00%	Time 0.88s
+
+03/29 01:05:54 AM | Test Loss 7.1191	Top1 0.00%	Top5 0.00%	Time 2.52s
+
+03/29 01:06:00 AM | Test Loss 7.1958	Top1 0.00%	Top5 0.00%	Time 2.04s
+
+03/29 01:06:02 AM | Test Loss 7.0699	Top1 0.00%	Top5 0.00%	Time 1.14s
+
+03/29 01:06:05 AM | Test Loss 7.1920	Top1 0.00%	Top5 0.00%	Time 1.27s
+
+03/29 01:06:09 AM | Test Loss 6.9352	Top1 0.00%	Top5 0.00%	Time 1.34s
+
+03/29 01:06:12 AM | Test Loss 6.9549	Top1 0.00%	Top5 0.00%	Time 1.10s
+
+03/29 01:06:15 AM | Test Loss 7.4064	Top1 0.00%	Top5 0.00%	Time 1.13s
+
+03/29 01:06:18 AM | Test Loss 6.9814	Top1 0.00%	Top5 0.00%	Time 1.42s
+
+03/29 01:06:21 AM | Test Loss 7.6056	Top1 0.00%	Top5 0.00%	Time 0.93s
+
+03/29 01:06:25 AM | Test Loss 7.1606	Top1 0.00%	Top5 0.00%	Time 2.30s
+
+03/29 01:06:28 AM | Test Loss 6.9247	Top1 0.00%	Top5 0.00%	Time 1.12s
+
+03/29 01:06:33 AM | Test Loss 8.0007	Top1 0.00%	Top5 0.00%	Time 2.68s
+
+03/29 01:06:38 AM | Test Loss 7.3221	Top1 0.00%	Top5 0.00%	Time 2.85s
+
+03/29 01:06:41 AM | Test Loss 6.9802	Top1 0.00%	Top5 0.00%	Time 0.81s
+
+03/29 01:06:44 AM | Test Loss 6.8381	Top1 0.31%	Top5 13.44%	Time 0.65s
+
+03/29 01:06:46 AM | Test Loss 6.8619	Top1 0.00%	Top5 0.00%	Time 0.92s
+
+03/29 01:06:51 AM | Test Loss 7.0497	Top1 0.00%	Top5 0.00%	Time 1.85s
+
+03/29 01:06:54 AM | Test Loss 6.9306	Top1 0.00%	Top5 0.00%	Time 0.99s
+
+03/29 01:06:56 AM | Test Loss 7.0632	Top1 0.00%	Top5 11.25%	Time 0.82s
+
+03/29 01:06:59 AM | Test Loss 7.0352	Top1 0.00%	Top5 0.00%	Time 1.10s
+
+03/29 01:07:02 AM | Test Loss 11.6800	Top1 0.00%	Top5 0.00%	Time 1.30s
+
+03/29 01:07:05 AM | Test Loss 8.9705	Top1 0.00%	Top5 0.00%	Time 0.88s
+
+03/29 01:07:07 AM | Test Loss 7.7020	Top1 0.00%	Top5 0.00%	Time 0.76s
+
+03/29 01:07:10 AM | Test Loss 7.3336	Top1 0.00%	Top5 0.00%	Time 0.61s
+
+03/29 01:07:12 AM | Test Loss 6.8920	Top1 0.00%	Top5 10.62%	Time 0.80s
+
+03/29 01:07:15 AM | Test Loss 7.1747	Top1 0.00%	Top5 0.00%	Time 0.99s
+
+03/29 01:07:18 AM | Test Loss 7.4541	Top1 0.00%	Top5 0.00%	Time 1.02s
+
+03/29 01:07:25 AM | Test Loss 8.1116	Top1 0.00%	Top5 0.00%	Time 2.80s
+
+03/29 01:07:27 AM | Test Loss 7.4860	Top1 0.00%	Top5 0.00%	Time 0.86s
+
+03/29 01:07:30 AM | Test Loss 7.5544	Top1 0.00%	Top5 0.00%	Time 0.67s
+
+03/29 01:07:34 AM | Test Loss 7.3033	Top1 0.00%	Top5 0.00%	Time 2.90s
+
+03/29 01:07:38 AM | Test Loss 6.9729	Top1 0.00%	Top5 0.00%	Time 1.40s
+
+03/29 01:07:41 AM | Test Loss 7.1700	Top1 0.00%	Top5 0.00%	Time 1.15s
+
+03/29 01:07:44 AM | Test Loss 7.1262	Top1 0.00%	Top5 0.00%	Time 1.05s
+
+03/29 01:07:46 AM | Test Loss 6.9907	Top1 0.00%	Top5 0.00%	Time 0.81s
+
+03/29 01:07:49 AM | Test Loss 6.9030	Top1 0.00%	Top5 0.00%	Time 1.04s
+
+03/29 01:07:51 AM | Test Loss 7.2747	Top1 0.00%	Top5 0.00%	Time 0.83s
+
+03/29 01:07:54 AM | Test Loss 7.1330	Top1 0.00%	Top5 0.00%	Time 0.79s
+
+03/29 01:07:57 AM | Test Loss 7.3309	Top1 0.00%	Top5 0.00%	Time 1.95s
+
+03/29 01:08:02 AM | Test Loss 6.9738	Top1 0.00%	Top5 0.00%	Time 1.55s
+
+03/29 01:08:04 AM | Test Loss 7.4218	Top1 0.00%	Top5 0.00%	Time 0.89s
+
+03/29 01:08:07 AM | Test Loss 7.3231	Top1 0.00%	Top5 0.00%	Time 0.72s
+
+03/29 01:08:11 AM | Test Loss 7.3863	Top1 0.00%	Top5 0.00%	Time 2.29s
+
+03/29 01:08:14 AM | Test Loss 7.2167	Top1 0.00%	Top5 0.00%	Time 1.05s
+
+03/29 01:08:17 AM | Test Loss 7.4602	Top1 0.00%	Top5 0.00%	Time 0.68s
+
+03/29 01:08:19 AM | Test Loss 7.7253	Top1 0.00%	Top5 0.00%	Time 0.79s
+
+03/29 01:08:22 AM | Test Loss 6.8897	Top1 0.00%	Top5 0.00%	Time 0.77s
+
+03/29 01:08:24 AM | Test Loss 7.6384	Top1 0.00%	Top5 0.00%	Time 0.75s
+
+03/29 01:08:32 AM | Test Loss 7.5574	Top1 0.00%	Top5 0.00%	Time 4.44s
+
+03/29 01:08:36 AM | Test Loss 7.2153	Top1 0.00%	Top5 0.00%	Time 1.53s
+
+03/29 01:08:39 AM | Test Loss 7.9625	Top1 0.00%	Top5 0.00%	Time 1.41s
+
+03/29 01:08:42 AM | Test Loss 8.4823	Top1 0.00%	Top5 0.00%	Time 1.28s
+
+03/29 01:08:45 AM | Test Loss 7.4891	Top1 0.00%	Top5 0.00%	Time 1.12s
+
+03/29 01:08:50 AM | Test Loss 7.4312	Top1 0.00%	Top5 0.00%	Time 1.17s
+
+03/29 01:08:53 AM | Test Loss 7.4729	Top1 0.00%	Top5 0.00%	Time 1.25s
+
+03/29 01:08:56 AM | Test Loss 7.3113	Top1 0.00%	Top5 0.00%	Time 0.96s
+
+03/29 01:08:56 AM | Best Top-1 accuracy: 0.312 Top-5 accuracy: 15.625
+03/29 01:08:56 AM | --------------UnPrune Model--------------
+03/29 01:08:56 AM | Channels: 26560
+03/29 01:08:56 AM | Params: 25.56 M 
+03/29 01:08:56 AM | FLOPS: 4113.56 M 
+03/29 01:08:56 AM | --------------Prune Model--------------
+03/29 01:08:56 AM | Channels:20935
+03/29 01:08:56 AM | Params: 7.52 M
+03/29 01:08:56 AM | FLOPS: 1210.02 M
+03/29 01:08:56 AM | --------------Compress Rate--------------
+03/29 01:08:56 AM | Channels Prune Rate: 20935/26560 (21.18%)
+03/29 01:08:56 AM | Params Compress Rate: 7.52 M/25.56 M(70.57%)
+03/29 01:08:56 AM | FLOPS Compress Rate: 1210.02 M/4113.56 M(70.58%)
+04/13 09:10:24 PM | Test Loss 0.6411	Top1 83.55%	Top5 95.74%	Time 8.95s
+
+04/13 09:12:44 PM | Test Loss 0.6411	Top1 83.55%	Top5 95.74%	Time 8.94s
+
+04/13 09:14:22 PM | Test Loss 0.5931	Top1 84.69%	Top5 95.62%	Time 1.05s
+
+04/13 09:14:50 PM | Test Loss 8.6583	Top1 0.00%	Top5 0.00%	Time 0.48s
+
+04/13 09:14:52 PM | Test Loss 9793.4532	Top1 0.00%	Top5 0.00%	Time 0.51s
+
+04/13 09:14:54 PM | Test Loss 221849.2469	Top1 0.00%	Top5 0.00%	Time 0.51s
+
+04/13 09:14:56 PM | Test Loss 51263.0727	Top1 0.00%	Top5 0.00%	Time 0.52s
+
+04/13 09:14:58 PM | Test Loss 1470.8233	Top1 0.00%	Top5 0.00%	Time 0.39s
+
+04/13 09:14:59 PM | Test Loss 7.2736	Top1 0.00%	Top5 0.00%	Time 0.47s
+
+04/13 09:15:01 PM | Test Loss 7.9764	Top1 0.00%	Top5 0.00%	Time 0.51s
+
+04/13 09:15:03 PM | Test Loss 129.5368	Top1 0.00%	Top5 0.00%	Time 0.50s
+
+04/13 09:15:05 PM | Test Loss 17.5611	Top1 0.00%	Top5 0.00%	Time 0.52s
+
+04/13 09:15:07 PM | Test Loss 27.5597	Top1 0.00%	Top5 0.00%	Time 0.55s
+
+04/13 09:15:31 PM | Test Loss 0.5931	Top1 84.69%	Top5 95.62%	Time 1.10s
+
+04/13 09:16:03 PM | Test Loss 8.6583	Top1 0.00%	Top5 0.00%	Time 0.72s
+
+04/13 09:16:06 PM | Test Loss 32504.6070	Top1 0.00%	Top5 0.00%	Time 0.54s
+
+04/13 09:16:08 PM | Test Loss 1782824.6875	Top1 0.00%	Top5 0.00%	Time 0.54s
+
+04/13 09:16:10 PM | Test Loss 161727.0469	Top1 0.00%	Top5 0.00%	Time 0.59s
+
+04/13 09:16:12 PM | Test Loss 19492.3365	Top1 0.00%	Top5 0.00%	Time 0.60s
+
+04/13 09:16:14 PM | Test Loss 8304.6668	Top1 0.00%	Top5 0.00%	Time 0.45s
+
+04/13 09:16:16 PM | Test Loss 142.8802	Top1 0.00%	Top5 0.00%	Time 0.53s
+
+04/13 09:16:18 PM | Test Loss 8.6294	Top1 0.00%	Top5 0.00%	Time 0.57s
+
+04/13 09:16:20 PM | Test Loss 14.7804	Top1 0.00%	Top5 0.00%	Time 0.56s
+
+04/13 09:16:22 PM | Test Loss 7.9430	Top1 0.00%	Top5 0.00%	Time 0.57s
+
+04/13 09:16:22 PM | Best Top-1 accuracy: 0.000 Top-5 accuracy: 0.000
+04/13 09:16:22 PM | --------------UnPrune Model--------------
+04/13 09:16:22 PM | Channels: 26560
+04/13 09:16:22 PM | Params: 25.56 M 
+04/13 09:16:22 PM | FLOPS: 4113.56 M 
+04/13 09:16:22 PM | --------------Prune Model--------------
+04/13 09:16:22 PM | Channels:20935
+04/13 09:16:22 PM | Params: 7.52 M
+04/13 09:16:22 PM | FLOPS: 1210.02 M
+04/13 09:16:22 PM | --------------Compress Rate--------------
+04/13 09:16:22 PM | Channels Prune Rate: 20935/26560 (21.18%)
+04/13 09:16:22 PM | Params Compress Rate: 7.52 M/25.56 M(70.57%)
+04/13 09:16:22 PM | FLOPS Compress Rate: 1210.02 M/4113.56 M(70.58%)
+04/14 04:46:35 PM | Test Loss 7.4305	Top1 0.00%	Top5 0.00%	Time 0.63s
+
+04/14 04:46:37 PM | Test Loss 24095.7289	Top1 0.00%	Top5 0.00%	Time 0.60s
+
+04/14 04:46:40 PM | Test Loss 5516047.4000	Top1 0.00%	Top5 0.00%	Time 0.57s
+
+04/14 04:46:42 PM | Test Loss 1636805.2937	Top1 0.00%	Top5 0.00%	Time 0.68s
+
+04/14 04:46:45 PM | Test Loss 4669.9889	Top1 0.00%	Top5 0.00%	Time 0.56s
+
+04/14 04:46:47 PM | Test Loss 853.2974	Top1 0.00%	Top5 0.00%	Time 0.60s
+
+04/14 04:46:49 PM | Test Loss 14.3721	Top1 0.00%	Top5 0.00%	Time 0.58s
+
+04/14 04:46:52 PM | Test Loss 216.7874	Top1 0.00%	Top5 0.00%	Time 0.64s
+
+04/14 04:46:54 PM | Test Loss 58.1752	Top1 0.00%	Top5 0.00%	Time 0.64s
+
+04/14 04:46:56 PM | Test Loss 9.8129	Top1 0.00%	Top5 0.00%	Time 0.61s
+
+04/14 04:46:56 PM | Best Top-1 accuracy: 0.000 Top-5 accuracy: 0.000
+04/15 10:20:47 PM | Test Loss 0.6411	Top1 83.55%	Top5 95.74%	Time 5.18s
+
+04/15 11:56:05 PM | Test Loss 0.5739	Top1 84.77%	Top5 96.09%	Time 0.81s
+
+04/15 11:57:48 PM | Test Loss 0.5739	Top1 84.77%	Top5 96.09%	Time 0.82s
+
+04/16 12:00:36 AM | Test Loss 0.5739	Top1 84.77%	Top5 96.09%	Time 0.82s
+
+04/16 12:01:18 AM | Test Loss 0.5739	Top1 84.77%	Top5 96.09%	Time 1.57s
+
+04/16 12:01:46 AM | Test Loss 7.5886	Top1 0.00%	Top5 0.00%	Time 0.55s
+
+04/16 12:01:48 AM | Test Loss 7.7922	Top1 0.00%	Top5 0.00%	Time 0.59s
+
+04/16 12:01:50 AM | Test Loss 7.8378	Top1 0.00%	Top5 0.00%	Time 0.64s
+
+04/16 12:01:52 AM | Test Loss 7.8821	Top1 0.00%	Top5 0.00%	Time 0.62s
+
+04/16 12:01:54 AM | Test Loss 39.5631	Top1 0.00%	Top5 0.00%	Time 0.63s
+
+04/16 12:01:57 AM | Test Loss 1416.2347	Top1 0.00%	Top5 0.00%	Time 0.64s
+
+04/16 12:01:59 AM | Test Loss 6392.8872	Top1 0.00%	Top5 0.00%	Time 0.69s
+
+04/16 12:02:57 AM | Test Loss 0.5739	Top1 84.77%	Top5 96.09%	Time 1.67s
+
+04/16 12:03:27 AM | Test Loss 7.5899	Top1 0.00%	Top5 0.00%	Time 0.56s
+
+04/16 12:03:29 AM | Test Loss 7.8973	Top1 0.00%	Top5 0.00%	Time 0.55s
+
+04/16 12:03:31 AM | Test Loss 7.7243	Top1 0.00%	Top5 0.00%	Time 0.49s
+
+04/16 12:03:33 AM | Test Loss 7.0482	Top1 0.00%	Top5 0.00%	Time 0.53s
+
+04/16 12:03:34 AM | Test Loss 23.2793	Top1 0.00%	Top5 0.00%	Time 0.54s
+
+04/16 12:03:36 AM | Test Loss 812.4660	Top1 0.00%	Top5 0.00%	Time 0.55s
+
+04/16 12:03:38 AM | Test Loss 2910.5153	Top1 0.00%	Top5 0.00%	Time 0.58s
+
+04/16 12:03:40 AM | Test Loss 7901.9600	Top1 0.00%	Top5 0.00%	Time 0.50s
+
+04/16 12:03:41 AM | Test Loss 8412.3391	Top1 0.00%	Top5 0.00%	Time 0.42s
+
+04/16 12:03:43 AM | Test Loss 5783.0054	Top1 0.00%	Top5 0.00%	Time 0.34s
+
+04/16 12:03:43 AM | Best Top-1 accuracy: 0.000 Top-5 accuracy: 0.000
+04/17 06:11:46 PM | Test Loss 0.5739	Top1 84.77%	Top5 96.09%	Time 2.03s
+
+04/17 06:16:24 PM | Test Loss 0.5739	Top1 84.77%	Top5 96.09%	Time 1.93s
+
+04/17 06:17:30 PM | Test Loss 0.4723	Top1 89.06%	Top5 96.88%	Time 0.22s
+
+04/17 06:18:11 PM | Test Loss 6.8934	Top1 0.00%	Top5 0.00%	Time 0.15s
+
+04/17 06:18:12 PM | Test Loss 6.8817	Top1 0.00%	Top5 0.00%	Time 0.14s
+
+04/17 06:18:13 PM | Test Loss 26.7891	Top1 0.00%	Top5 0.00%	Time 0.14s
+
+04/17 06:18:13 PM | Test Loss 8508.3809	Top1 0.00%	Top5 0.00%	Time 0.16s
+
+04/17 06:18:14 PM | Test Loss 9114049.2500	Top1 0.00%	Top5 0.00%	Time 0.13s
+
+04/17 06:18:15 PM | Test Loss 2586499584.0000	Top1 0.00%	Top5 0.00%	Time 0.12s
+
+04/17 06:18:15 PM | Test Loss 3598681088.0000	Top1 0.00%	Top5 0.00%	Time 0.13s
+
+04/17 06:18:16 PM | Test Loss 1624819200.0000	Top1 0.00%	Top5 0.00%	Time 0.14s
+
+04/17 06:18:17 PM | Test Loss 88114368.0000	Top1 0.00%	Top5 0.00%	Time 0.13s
+
+04/17 06:18:17 PM | Test Loss 21463341.0000	Top1 0.00%	Top5 0.00%	Time 0.14s
+
+04/17 06:18:18 PM | Test Loss 63440826.0000	Top1 0.00%	Top5 0.00%	Time 0.16s
+
+04/17 06:18:19 PM | Test Loss 1415447.5625	Top1 0.00%	Top5 0.00%	Time 0.14s
+
+04/17 06:18:19 PM | Test Loss 479006.7188	Top1 0.00%	Top5 0.00%	Time 0.22s
+
+04/17 06:18:20 PM | Test Loss 67447.6719	Top1 0.00%	Top5 0.00%	Time 0.15s
+
+04/17 06:18:21 PM | Test Loss 20447.4609	Top1 0.00%	Top5 0.00%	Time 0.13s
+
+04/17 06:18:22 PM | Test Loss 9388.0239	Top1 0.00%	Top5 0.00%	Time 0.13s
+
+04/17 06:18:22 PM | Test Loss 629069.8125	Top1 0.00%	Top5 0.00%	Time 0.14s
+
+04/17 06:18:23 PM | Test Loss 698608.0000	Top1 0.00%	Top5 0.00%	Time 0.18s
+
+04/17 06:18:24 PM | Test Loss 67860.6973	Top1 0.00%	Top5 0.00%	Time 0.13s
+
+04/17 06:18:24 PM | Test Loss 17370.9429	Top1 0.00%	Top5 0.00%	Time 0.12s
+
+04/17 06:18:25 PM | Test Loss 5720.5750	Top1 0.00%	Top5 0.00%	Time 0.18s
+
+04/17 06:18:26 PM | Test Loss 2910.4418	Top1 0.00%	Top5 0.00%	Time 0.15s
+
+04/17 06:18:26 PM | Test Loss 1983.2195	Top1 0.00%	Top5 0.00%	Time 0.12s
+
+04/17 06:18:27 PM | Test Loss 421.1744	Top1 0.00%	Top5 0.00%	Time 0.12s
+
+04/17 06:18:28 PM | Test Loss 7.8696	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:18:28 PM | Test Loss 36.1466	Top1 0.00%	Top5 0.00%	Time 0.12s
+
+04/17 06:18:29 PM | Test Loss 86.5255	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:18:29 PM | Test Loss 27.6144	Top1 0.00%	Top5 0.00%	Time 0.12s
+
+04/17 06:18:30 PM | Test Loss 11.3358	Top1 0.00%	Top5 0.00%	Time 0.14s
+
+04/17 06:18:31 PM | Test Loss 7.0395	Top1 0.00%	Top5 0.00%	Time 0.14s
+
+04/17 06:18:31 PM | Test Loss 7.3404	Top1 0.00%	Top5 0.00%	Time 0.10s
+
+04/17 06:18:32 PM | Test Loss 7.4208	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:18:33 PM | Test Loss 7.2229	Top1 0.00%	Top5 0.00%	Time 0.13s
+
+04/17 06:18:34 PM | Test Loss 6.9879	Top1 0.00%	Top5 0.00%	Time 0.14s
+
+04/17 06:18:35 PM | Test Loss 7.2066	Top1 0.00%	Top5 0.00%	Time 0.18s
+
+04/17 06:18:35 PM | Test Loss 7.1407	Top1 0.00%	Top5 0.00%	Time 0.14s
+
+04/17 06:18:36 PM | Test Loss 7.0776	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:18:37 PM | Test Loss 7.0072	Top1 0.00%	Top5 0.00%	Time 0.13s
+
+04/17 06:18:37 PM | Test Loss 6.9118	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:18:38 PM | Test Loss 7.0535	Top1 0.00%	Top5 1.56%	Time 0.11s
+
+04/17 06:18:39 PM | Test Loss 7.1664	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:18:40 PM | Test Loss 6.9210	Top1 0.00%	Top5 0.00%	Time 0.14s
+
+04/17 06:18:40 PM | Test Loss 6.9305	Top1 0.00%	Top5 0.00%	Time 0.12s
+
+04/17 06:18:41 PM | Test Loss 8.3982	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:18:41 PM | Test Loss 7.0855	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:18:42 PM | Test Loss 6.8725	Top1 0.00%	Top5 0.00%	Time 0.12s
+
+04/17 06:18:43 PM | Test Loss 8.8583	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:18:43 PM | Test Loss 7.4717	Top1 0.00%	Top5 53.12%	Time 0.10s
+
+04/17 06:18:44 PM | Test Loss 8.4481	Top1 0.00%	Top5 0.00%	Time 0.12s
+
+04/17 06:18:45 PM | Test Loss 8.2063	Top1 0.00%	Top5 0.00%	Time 0.12s
+
+04/17 06:18:45 PM | Test Loss 7.2481	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:18:46 PM | Test Loss 8.7057	Top1 0.00%	Top5 0.00%	Time 0.13s
+
+04/17 06:18:46 PM | Test Loss 9.8613	Top1 0.00%	Top5 0.00%	Time 0.12s
+
+04/17 06:18:47 PM | Test Loss 10.0349	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:18:48 PM | Test Loss 7.2580	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:18:48 PM | Test Loss 7.2236	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:18:49 PM | Test Loss 7.1605	Top1 0.00%	Top5 0.00%	Time 0.17s
+
+04/17 06:18:49 PM | Test Loss 8.2118	Top1 0.00%	Top5 0.00%	Time 0.13s
+
+04/17 06:18:50 PM | Test Loss 7.0825	Top1 0.00%	Top5 0.00%	Time 0.18s
+
+04/17 06:18:51 PM | Test Loss 7.9081	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:18:51 PM | Test Loss 6.9259	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:18:52 PM | Test Loss 6.8254	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:18:52 PM | Test Loss 7.0646	Top1 0.00%	Top5 0.00%	Time 0.15s
+
+04/17 06:18:53 PM | Test Loss 7.0699	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:18:54 PM | Test Loss 7.0745	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:18:54 PM | Test Loss 7.2704	Top1 0.00%	Top5 0.00%	Time 0.10s
+
+04/17 06:18:55 PM | Test Loss 6.9664	Top1 0.00%	Top5 0.00%	Time 0.12s
+
+04/17 06:18:55 PM | Test Loss 7.4384	Top1 0.00%	Top5 0.00%	Time 0.14s
+
+04/17 06:18:56 PM | Test Loss 7.0616	Top1 0.00%	Top5 0.00%	Time 0.13s
+
+04/17 06:18:56 PM | Test Loss 7.1671	Top1 0.00%	Top5 0.00%	Time 0.10s
+
+04/17 06:18:57 PM | Test Loss 6.9149	Top1 0.00%	Top5 0.00%	Time 0.10s
+
+04/17 06:18:58 PM | Test Loss 9.1929	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:18:58 PM | Test Loss 7.2462	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:18:59 PM | Test Loss 6.9606	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:18:59 PM | Test Loss 7.3105	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:19:00 PM | Test Loss 7.0000	Top1 0.00%	Top5 0.00%	Time 0.13s
+
+04/17 06:19:00 PM | Test Loss 8.4160	Top1 0.00%	Top5 0.00%	Time 0.12s
+
+04/17 06:19:01 PM | Test Loss 9.7788	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:19:02 PM | Test Loss 8.0506	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:19:02 PM | Test Loss 7.7836	Top1 0.00%	Top5 0.00%	Time 0.10s
+
+04/17 06:19:03 PM | Test Loss 6.9525	Top1 0.00%	Top5 0.00%	Time 0.14s
+
+04/17 06:19:03 PM | Test Loss 7.0762	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:19:04 PM | Test Loss 6.8951	Top1 0.00%	Top5 0.00%	Time 0.12s
+
+04/17 06:19:04 PM | Test Loss 7.2088	Top1 0.00%	Top5 0.00%	Time 0.11s
+
+04/17 06:19:05 PM | Test Loss 7.9974	Top1 0.00%	Top5 0.00%	Time 0.10s
+
+04/17 06:19:06 PM | Test Loss 7.3645	Top1 0.00%	Top5 0.00%	Time 0.12s
+
+04/17 06:19:06 PM | Test Loss 8.0220	Top1 0.00%	Top5 0.00%	Time 0.12s
+
+04/17 06:19:07 PM | Test Loss 6.9964	Top1 0.00%	Top5 0.00%	Time 0.13s
+
+04/17 06:19:07 PM | Test Loss 7.0490	Top1 0.00%	Top5 0.00%	Time 0.10s
+
+04/17 06:19:08 PM | Test Loss 7.6574	Top1 0.00%	Top5 0.00%	Time 0.12s
+
+04/17 06:19:08 PM | Best Top-1 accuracy: 0.000 Top-5 accuracy: 53.125

@@ -28,7 +28,8 @@ parser.add_argument(
     '--job_dir',
     type=str,
     default='experiments/',
-    help='The directory where the summaries will be stored. default:./experiments')
+    help='The directory where the summaries will be stored. default:./experiments'
+)
 
 ## Training
 parser.add_argument(
@@ -77,9 +78,18 @@ parser.add_argument(
 
 parser.add_argument(
     '--lr_type',
-    default='exp', 
+    default='step', 
     type=str, 
-    help='lr scheduler (exp/cos/step3/fixed)'
+    help='lr scheduler (step/exp/cos/step3/fixed)'
+)
+
+parser.add_argument('--label_smooth', type=float, default=0.1, help='label smoothing')
+
+parser.add_argument(
+    '--criterion',
+    default='Softmax', 
+    type=str, 
+    help='Loss func (Softmax/SmoothSoftmax)'
 )
 
 parser.add_argument(

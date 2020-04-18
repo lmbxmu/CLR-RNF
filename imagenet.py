@@ -11,14 +11,22 @@ from data import imagenet_dali
 from importlib import import_module
 from model.resnet_imagenet import BasicBlock, Bottleneck
 from model.mobilenet_v2 import InvertedResidual
-from utils.common import graph_weight, kmeans_weight, random_weight,random_project, direct_project
+from utils.common import *
 
 
 device = torch.device(f"cuda:{args.gpus[0]}") if torch.cuda.is_available() else 'cpu'
 checkpoint = utils.checkpoint(args)
 logger = utils.get_logger(os.path.join(args.job_dir + 'logger.log'))
+if args.criterion == 'Softmax':
+    criterion = nn.CrossEntropyLoss()
+    criterion = criterion.cuda()
+elif args.criterion == 'SmoothSoftmax':
+    criterion = CrossEntropyLabelSmooth(1000,args.label_smooth)
+    criterion = criterion.cuda()
+else:
+    raise ValueError('invalid criterion : {:}'.format(args.criterion))
 loss_func = nn.CrossEntropyLoss()
-
+loss_func = loss_func.cuda()
 
 # Data
 print('==> Preparing data..')
@@ -435,7 +443,7 @@ def train(model, optimizer, trainLoader, args, epoch, topk=(1,)):
 
         optimizer.zero_grad()
         output = model(inputs)
-        loss = loss_func(output, targets)
+        loss = criterion(output, targets)
         loss.backward()
         losses.update(loss.item(), inputs.size(0))
         optimizer.step()
@@ -493,7 +501,8 @@ def test(model, testLoader, topk=(1,)):
     return accuracy.avg, top5_accuracy.avg
 
 def adjust_learning_rate(optimizer, epoch, step, len_epoch):
-    if args.arch == 'resnet_imagenet':
+    #Warmup
+    if args.lr_type == 'step':
         factor = epoch // 30
 
         if epoch >= 80:
@@ -501,26 +510,22 @@ def adjust_learning_rate(optimizer, epoch, step, len_epoch):
 
         lr = args.lr * (0.1 ** factor)
 
-        #Warmup
-        if epoch < 5:
-            lr = lr * float(1 + step + epoch * len_epoch) / (5. * len_epoch)
-
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = lr
+    elif args.lr_type == 'cos':  # cos without warm-up
+        lr = 0.5 * args.lr * (1 + math.cos(math.pi * epoch / args.num_epochs))
+    elif args.lr_type == 'exp':
+        step = 1
+        decay = 0.96
+        lr = args.lr * (decay ** (epoch // step))
+    elif args.lr_type == 'fixed':
+        lr = args.lr
     else:
-        if args.lr_type == 'cos':  # cos without warm-up
-            lr = 0.5 * args.lr * (1 + math.cos(math.pi * epoch / args.num_epochs))
-        elif args.lr_type == 'exp':
-            step = 1
-            decay = 0.96
-            lr = args.lr * (decay ** (epoch // step))
-        elif args.lr_type == 'fixed':
-            lr = args.lr
-        else:
-            raise NotImplementedError
-        print('=> lr: {}'.format(lr))
-        for param_group in optimizer.param_groups:
-            param_group['lr'] = lr
+        raise NotImplementedError
+    if epoch < 5:
+            lr = lr * float(1 + step + epoch * len_epoch) / (5. * len_epoch)
+    print('=> lr: {}'.format(lr))
+    for param_group in optimizer.param_groups:
+        param_group['lr'] = lr
+
 
 def main():
     start_epoch = 0

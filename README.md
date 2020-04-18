@@ -33,6 +33,7 @@ python imagenet.py
 --arch resnet_imagenet 
 --cfg resnet50 
 --lr 0.1 
+--lr_type step
 --num_epochs 90 
 --train_batch_size 256 
 --weight_decay 1e-4 
@@ -94,5 +95,6 @@ optional arguments:
                         Initital method of pruned model. default:direct.
                         optimal:random_project
   --pr_target            Target prune ratio of parameters
-  --lr_tyoe             only for mobilenet: lr scheduler (exp/cos/step3/fixed)
+  --lr_type             lr scheduler (exp/cos/step/fixed)
+  --criterion           Loss func (Softmax/SmoothSoftmax)
 ```
