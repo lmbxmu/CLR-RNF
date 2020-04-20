@@ -153,6 +153,14 @@ def random_weight(weight,m):
 def getloss(B,A):
     #loss = torch.pow(torch.norm(A - torch.mm(B, B.t()),2),2)
     loss = torch.norm(A - torch.mm(B, B.t()),1)/(A.size(0)*A.size(0))
+    '''
+    f_num = A.size(0)
+    A_1 = torch.zeros(f_num,f_num)
+    for i in range(f_num):
+        for j in range(f_num):
+            A_1[i,j] = torch.sum(torch.mul(B[i,:],B[j,:]))
+    loss = torch.pow(torch.norm(A - A_1,1),1)
+    '''
     return loss
 
 

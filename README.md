@@ -22,7 +22,7 @@ python cifar.py
 ```
 
 
- You can run the following code to prune model on ImageNet: 
+ You can run the following code to prune resnets on ImageNet: 
 
 ```shell
 python imagenet.py 
@@ -39,6 +39,27 @@ python imagenet.py
 --weight_decay 1e-4 
 --gpus 0 1 2 
 --pr_target 0.7 
+--graph_gpu
+```
+
+ You can run the following code to prune mobilenets on ImageNet: 
+
+```shell
+python imagenet.py 
+--dataset imagenet 
+--arch mobilenet_v2 
+--cfg mobilenet_v2 
+--data_path /media/disk2/zyc/ImageNet2012 
+--pretrain_model ./pretrain/checkpoints/mobilenet_v2.pth.tar 
+--job_dir ./experiment/imagenet/mobilenet_v2 
+--lr 0.1 
+--lr_type cos
+--weight_decay 4e-5 
+--num_epochs 150 
+--gpus 0  
+--train_batch_size 256 
+--eval_batch_size 256 
+--pr_target 0.25
 --graph_gpu
 ```
 
@@ -88,12 +109,11 @@ optional arguments:
                         default:/home/data/cifar10/
   --job_dir JOB_DIR     The directory where the summaries will be stored.
                         default:./experiments
-  --arch ARCH           Architecture of model. default:resnet
-  --cfg CFG             Detail architecuture of model. default:resnet56
+  --arch ARCH           Architecture of model. default:resnet(mobilenet_v1/mobilenet_v2)
+  --cfg CFG             Detail architecuture of model. default:resnet56(mobilenet_v1/mobilenet_v2)
   --graph_gpu           Use gpu to graph the filters or not. default:False
   --init_method INIT_METHOD
-                        Initital method of pruned model. default:direct.
-                        optimal:random_project
+                        Initital method of pruned model. default:direct_project.(random_project)
   --pr_target            Target prune ratio of parameters
   --lr_type             lr scheduler (exp/cos/step/fixed)
   --criterion           Loss func (Softmax/SmoothSoftmax)
