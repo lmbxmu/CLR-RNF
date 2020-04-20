@@ -431,14 +431,14 @@ def train(model, optimizer, trainLoader, args, epoch, topk=(1,)):
     top5_accuracy = utils.AverageMeter()
     print_freq = trainLoader._size // args.train_batch_size // 10
     start_time = time.time()
-    i = 0
+    #i = 0
     for batch, batch_data in enumerate(trainLoader):
 
         inputs = batch_data[0]['data'].to(device)
         targets = batch_data[0]['label'].squeeze().long().to(device)
-        i += 1
-        if i > 2:
-            break
+        #i += 1
+        #if i > 2:
+            #break
         adjust_learning_rate(optimizer, epoch, batch, trainLoader._size // args.train_batch_size)
 
         optimizer.zero_grad()
@@ -477,11 +477,11 @@ def test(model, testLoader, topk=(1,)):
 
     start_time = time.time()
     with torch.no_grad():
-        i = 0
+        #i = 0
         for batch_idx, batch_data in enumerate(testLoader):
-            i += 1
-            if i > 2:
-                break
+            #i += 1
+            #if i > 2:
+                #break
             inputs = batch_data[0]['data'].to(device)
             targets = batch_data[0]['label'].squeeze().long().to(device)
             outputs = model(inputs)

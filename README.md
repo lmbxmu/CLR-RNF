@@ -109,8 +109,8 @@ optional arguments:
                         default:/home/data/cifar10/
   --job_dir JOB_DIR     The directory where the summaries will be stored.
                         default:./experiments
-  --arch ARCH           Architecture of model. default:resnet. optional:mobilenet_v1/mobilenet_v2
-  --cfg CFG             Detail architecuture of model. default:resnet56. optional:mobilenet_v1/mobilenet_v2
+  --arch ARCH           Architecture of model. default:resnet_imagenet. optional:resnet_cifar/mobilenet_v1/mobilenet_v2
+  --cfg CFG             Detail architecuture of model. default:resnet56. optional:resnet110/18/34/50/101/152 mobilenet_v1/mobilenet_v2
   --graph_gpu           Use gpu to graph the filters or not. default:False
   --init_method INIT_METHOD
                         Initital method of pruned model. default:direct_project. optional:random_project
