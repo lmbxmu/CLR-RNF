@@ -40,6 +40,13 @@ def get_data_set(type='train'):
 trainLoader = get_data_set('train')
 testLoader = get_data_set('test')
 
+flops_cfg = {
+    'resnet50':[2]*3+[1.5]*4+[1]*6+[0.5]*3,
+    #'resnet50':[1.0, 1.67262, 0.3869, 1.26786, 0.3869, 1.26786, 0.77381, 2.02679, 0.38393, 1.25298, 0.38393, 1.25298, 0.38393, 1.25298, 0.76786, 2.01339, 0.38244, 1.24554, 0.38244, 1.24554, 0.38244, 1.24554, 0.38244, 1.24554, 0.38244, 1.24554, 0.76488, 2.0067, 0.3817, 1.24182, 0.3817, 1.24182]
+}
+flops_lambda = {
+ 'resnet50':1,
+}
 
 # Load pretrained model
 print('==> Loading pretrained model..')
@@ -70,19 +77,26 @@ def graph_resnet(pr_target):
     indices = []
 
     current_index = 0
+    index = 0
     #Sort the weights and get the pruning threshold
     for name, module in origin_model.named_modules():
 
         if isinstance(module, BasicBlock):
-            conv1_weight = module.conv1.weight.data
+            conv1_weight = torch.div(module.conv1.weight.data,math.pow(flops_cfg[args.cfg][index],flops_lambda[args.cfg]))
+            #conv1_weight = module.conv1.weight.data
             weights.append(conv1_weight.view(-1))
+            index += 1
 
         elif isinstance(module, Bottleneck):
 
-            conv1_weight = module.conv1.weight.data
+            conv1_weight = torch.div(module.conv1.weight.data,math.pow(flops_cfg[args.cfg][index],flops_lambda[args.cfg]))
+            #conv1_weight = module.conv1.weight.data
             weights.append(conv1_weight.view(-1))
-            conv2_weight = module.conv2.weight.data
+            #conv2_weight = module.conv2.weight.data
+            conv2_weight = torch.div(module.conv2.weight.data,math.pow(flops_cfg[args.cfg][index],flops_lambda[args.cfg]))
             weights.append(conv2_weight.view(-1))
+
+            index += 1
             
     all_weights = torch.cat(weights,0)
     preserve_num = int(all_weights.size(0) * (1-pr_target))

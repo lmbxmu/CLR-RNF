@@ -1,4 +1,4 @@
-2020-04-17-10:29:33
+2020-04-25-19:40:08
 
 gpus: [0]
 dataset: cifar10
@@ -11,11 +11,13 @@ train_batch_size: 256
 eval_batch_size: 100
 momentum: 0.9
 lr: 0.01
-lr_type: exp
+lr_type: step
+label_smooth: 0.1
+criterion: Softmax
 lr_decay_step: [50, 100]
 weight_decay: 0.005
 pretrain_model: /Users/zhangyuxin/Documents/MAC/pretrain_model/resnet_56.pt
-pr_target: 0.9
+pr_target: 0.54
 init_method: direct_project
 graph_gpu: False
 

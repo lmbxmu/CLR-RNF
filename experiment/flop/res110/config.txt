@@ -1,11 +1,11 @@
-2020-04-24-11:54:12
+2020-04-25-16:48:49
 
 gpus: [0]
 dataset: cifar10
 data_path: /data/cifar10/
-job_dir: ./experiment/vgg_cifar
-arch: vgg_cifar
-cfg: vgg16
+job_dir: ./experiment/flop/res110
+arch: resnet_cifar
+cfg: resnet110
 num_epochs: 150
 train_batch_size: 256
 eval_batch_size: 100
@@ -16,8 +16,8 @@ label_smooth: 0.1
 criterion: Softmax
 lr_decay_step: [50, 100]
 weight_decay: 0.005
-pretrain_model: /Users/zhangyuxin/Documents/MAC/pretrain_model/vgg16_cifar10.pt
-pr_target: 0.8
+pretrain_model: /home/lmb/ABCPrunerPlus/pretrain/resnet_110.pt
+pr_target: 0.7
 init_method: direct_project
 graph_gpu: False
 

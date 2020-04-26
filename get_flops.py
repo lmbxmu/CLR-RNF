@@ -10,6 +10,7 @@ import utils.common as utils
 
 import os
 import time
+import math
 from importlib import import_module
 
 from thop import profile
@@ -20,6 +21,21 @@ device = torch.device(f"cuda:{args.gpus[0]}") if torch.cuda.is_available() else 
 checkpoint = utils.checkpoint(args)
 logger = utils.get_logger(os.path.join(args.job_dir + 'logger.log'))
 loss_func = nn.CrossEntropyLoss()
+
+flops_cfg = {
+    'vgg_cifar':[1.0, 18.15625, 9.07812, 18.07812, 9.03906, 18.03906, 18.03906, 9.01953, 18.01953, 18.01953, 4.50488, 4.50488, 4.50488],
+    'resnet56':[1.0, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.67278, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.66667, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685],
+    'resnet110':[1.0, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.67278, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.66667, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685],
+    #'resnet50':[1.0, 1.67262, 0.3869, 1.26786, 0.3869, 1.26786, 0.77381, 2.02679, 0.38393, 1.25298, 0.38393, 1.25298, 0.38393, 1.25298, 0.76786, 2.01339, 0.38244, 1.24554, 0.38244, 1.24554, 0.38244, 1.24554, 0.38244, 1.24554, 0.38244, 1.24554, 0.76488, 2.0067, 0.3817, 1.24182, 0.3817, 1.24182]
+    'resnet50':[2]*3+[1.5]*4+[1]*6+[0.5]*3
+    #[1.0, 0.61915, 0.61915, 1.04788, 0.61247, 0.61247, 0.61247, 1.04065, 0.60913, 0.60913, 0.60913, 0.60913, 0.60913, 1.03703, 0.60746, 0.60746]
+}
+flops_lambda = {
+ 'vgg_cifar': 0.5,
+ 'resnet56':10,
+ 'resnet110':5,
+ 'resnet50':1
+}
 
 # Load pretrained model
 print('==> Loading pretrained model..')
@@ -60,12 +76,15 @@ def graph_vgg(pr_target):
     indices = []
 
     current_layer = 0
+    index = 0
 
     #Sort the weights and get the pruning threshold
     for name, module in origin_model.named_modules():
         if isinstance(module, nn.Conv2d):
-            conv_weight = module.weight.data
+            #conv_weight = module.weight.data
+            conv_weight = torch.div(module.weight.data,math.pow(flops_cfg['vgg_cifar'][index],flops_lambda['vgg_cifar']))
             weights.append(conv_weight.view(-1))
+            index+=1
 
     all_weights = torch.cat(weights,0)
     preserve_num = int(all_weights.size(0) * (1-pr_target))
@@ -114,13 +133,16 @@ def graph_resnet(pr_target):
     prune_state_dict = []
 
     current_block = 0
+    index = 0
 
     #Sort the weights and get the pruning threshold
     for name, module in origin_model.named_modules():
         if isinstance(module, ResBasicBlock):
 
-            conv_weight = module.conv1.weight.data
+            #conv_weight = module.conv1.weight.data
+            conv_weight = torch.div(module.conv1.weight.data,math.pow(flops_cfg[args.cfg][index],flops_lambda[args.cfg]))
             weights.append(conv_weight.view(-1))
+            index += 1
 
     all_weights = torch.cat(weights,0)
     preserve_num = int(all_weights.size(0) * (1-pr_target))
@@ -130,6 +152,7 @@ def graph_resnet(pr_target):
     #Based on the pruning threshold, the prune cfg of each layer is obtained
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
+    print(pr_cfg)
     
     #Get the preseverd filters after pruning by graph method based on pruning proportion
 
@@ -254,19 +277,26 @@ def graph_resnet_imagenet(pr_target):
     indices = []
 
     current_index = 0
+    index = 0
     #Sort the weights and get the pruning threshold
     for name, module in origin_model.named_modules():
 
         if isinstance(module, BasicBlock):
-            conv1_weight = module.conv1.weight.data
+            conv1_weight = torch.div(module.conv1.weight.data,math.pow(flops_cfg[args.cfg][index],flops_lambda[args.cfg]))
+            #conv1_weight = module.conv1.weight.data
             weights.append(conv1_weight.view(-1))
+            index += 1
 
         elif isinstance(module, Bottleneck):
 
-            conv1_weight = module.conv1.weight.data
+            conv1_weight = torch.div(module.conv1.weight.data,math.pow(flops_cfg[args.cfg][index],flops_lambda[args.cfg]))
+            #conv1_weight = module.conv1.weight.data
             weights.append(conv1_weight.view(-1))
-            conv2_weight = module.conv2.weight.data
+            #conv2_weight = module.conv2.weight.data
+            conv2_weight = torch.div(module.conv2.weight.data,math.pow(flops_cfg[args.cfg][index],flops_lambda[args.cfg]))
             weights.append(conv2_weight.view(-1))
+
+            index += 1
             
     all_weights = torch.cat(weights,0)
     preserve_num = int(all_weights.size(0) * (1-pr_target))
@@ -276,6 +306,7 @@ def graph_resnet_imagenet(pr_target):
     #Based on the pruning threshold, the prune cfg of each layer is obtained
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
+    print(pr_cfg)
     #Get the preseverd filters after pruning by graph method based on pruning proportion
     for name, module in origin_model.named_modules():
 
