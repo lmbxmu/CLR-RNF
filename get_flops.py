@@ -26,15 +26,19 @@ flops_cfg = {
     'vgg_cifar':[1.0, 18.15625, 9.07812, 18.07812, 9.03906, 18.03906, 18.03906, 9.01953, 18.01953, 18.01953, 4.50488, 4.50488, 4.50488],
     'resnet56':[1.0, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.67278, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.66667, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685],
     'resnet110':[1.0, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.67278, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.66667, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685],
-    #'resnet50':[1.0, 1.67262, 0.3869, 1.26786, 0.3869, 1.26786, 0.77381, 2.02679, 0.38393, 1.25298, 0.38393, 1.25298, 0.38393, 1.25298, 0.76786, 2.01339, 0.38244, 1.24554, 0.38244, 1.24554, 0.38244, 1.24554, 0.38244, 1.24554, 0.38244, 1.24554, 0.76488, 2.0067, 0.3817, 1.24182, 0.3817, 1.24182]
-    'resnet50':[2]*3+[1.5]*4+[1]*6+[0.5]*3
+    #'resnet50':[1.0, 0.61915, 0.61915, 1.04788, 0.61247, 0.61247, 0.61247, 1.04065, 0.60913, 0.60913, 0.60913, 0.60913, 0.60913, 1.03703, 0.60746, 0.60746]
+    'resnet50':[2]*3+[1.5]*4+[1]*6+[0.5]*3,
+    #'mobilenet_v2':[1.0, 2.91, 2.565, 1.54125, 1.095, 1.095, 0.75375, 1.0275, 1.0275, 1.0275, 1.2675, 2.26125, 2.26125, 1.55531, 1.54219, 1.54219, 2.29219]
+    #'mobilenet_v2':[1.0, 2.7375, 1.24375, 0.95906, 1.93, 1.54656, 2.29219]
+    'mobilenet_v2':[1,3,1.5,0.5,2,1.5,1]
     #[1.0, 0.61915, 0.61915, 1.04788, 0.61247, 0.61247, 0.61247, 1.04065, 0.60913, 0.60913, 0.60913, 0.60913, 0.60913, 1.03703, 0.60746, 0.60746]
 }
 flops_lambda = {
  'vgg_cifar': 0.5,
  'resnet56':10,
  'resnet110':5,
- 'resnet50':1
+ 'resnet50':1,
+ 'mobilenet_v2':1
 }
 
 # Load pretrained model
@@ -445,13 +449,17 @@ def graph_mobilenet_v2(pr_target):
     current_index = 0
     cat_cfg = [2,3,4,3,3,1]
     c_index, i_index = 0, 0 
+
+    f_index = 0
     # Sort the weights and get the pruning threshold
     for name, module in origin_model.named_modules():
 
         if isinstance(module, InvertedResidual):
             conv1_weight = module.conv[3].weight.data
             if len(module.conv) == 5: #expand_ratio = 1
-                weights.append(conv1_weight.view(-1))
+                #weights.append(conv1_weight.view(-1))
+                weights.append(torch.div(conv1_weight.view(-1),math.pow(flops_cfg[args.cfg][f_index],flops_lambda[args.cfg])))
+                f_index += 1
             else:   
                 conv2_weight = module.conv[6].weight.data       
                 if i_index == 0:
@@ -460,9 +468,11 @@ def graph_mobilenet_v2(pr_target):
                     conv_weight = torch.cat((conv_weight,torch.cat((conv1_weight.view(-1),conv2_weight.view(-1)),0)),0)
                 i_index += 1
                 if i_index == cat_cfg[c_index]:
+                    conv_weight = torch.div(conv_weight,math.pow(flops_cfg[args.cfg][f_index],flops_lambda[args.cfg]))
                     weights.append(conv_weight)  
                     c_index += 1
                     i_index = 0
+                    f_index += 1
                 
 
     #weights.append(origin_model.state_dict()['features.18.0.weight'].view(-1))  #lastlayer          
@@ -475,7 +485,7 @@ def graph_mobilenet_v2(pr_target):
     # Based on the pruning threshold, the prune cfg of each layer is obtained
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight), threshold)).item() / weight.size(0))
-    #print(pr_cfg)
+    print(pr_cfg)
     graph_cfg = []
     graph_cfg.append(pr_cfg[0])
     for i in range(6):
@@ -483,7 +493,7 @@ def graph_mobilenet_v2(pr_target):
             graph_cfg.append(pr_cfg[i+1])
     #print(graph_cfg)
 
-    model = import_module(f'model.{args.arch}').mobilenet_v2(layer_cfg=graph_cfg).to(device)
+    model = import_module(f'model.{args.arch}_flops').mobilenet_v2(layer_cfg=graph_cfg).to(device)
 
 
     return model
@@ -514,6 +524,30 @@ def main():
         Input = torch.randn(1, 3, 32, 32).to(device)
     else:
         Input = torch.randn(1, 3, 224, 224).to(device)
+    # Load pretrained model
+    print('==> Loading pretrained model..')
+    if args.pretrain_model is None or not os.path.exists(args.pretrain_model):
+        raise ('Pretrained_model path should be exist!')
+    ckpt = torch.load(args.pretrain_model, map_location=device)
+    if args.arch == 'resnet_imagenet':
+        origin_model = import_module(f'model.{args.arch}').resnet(args.cfg).to(device)
+        origin_model.load_state_dict(ckpt)
+    elif args.arch == 'mobilenet_v1':
+        origin_model = import_module(f'model.{args.arch}').mobilenet_v1().to(device)
+        origin_model.load_state_dict(ckpt['state_dict'])
+    elif args.arch == 'mobilenet_v2':
+        origin_model = import_module(f'model.{args.arch}_flops').mobilenet_v2().to(device)
+    elif args.arch == 'vgg_cifar':
+        origin_model = import_module(f'model.{args.arch}').VGG(args.cfg).to(device)
+        origin_model.load_state_dict(ckpt['state_dict'])
+    elif args.arch == 'resnet_cifar':
+        origin_model = import_module(f'model.{args.arch}').resnet(args.cfg).to(device)
+        origin_model.load_state_dict(ckpt['state_dict'])
+    elif args.arch == 'googlenet':
+        origin_model = import_module(f'model.{args.arch}').googlenet().to(device)
+        origin_model.load_state_dict(ckpt['state_dict'])
+    else:
+        raise('arch not exist!')
     oriflops, oriparams = profile(origin_model, inputs=(Input, ))
     flops, params = profile(model, inputs=(Input, ))
 

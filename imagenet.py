@@ -42,10 +42,12 @@ testLoader = get_data_set('test')
 
 flops_cfg = {
     'resnet50':[2]*3+[1.5]*4+[1]*6+[0.5]*3,
+    'mobilenet_v2':[1,3,1.5,0.5,2,1.5,1]
     #'resnet50':[1.0, 1.67262, 0.3869, 1.26786, 0.3869, 1.26786, 0.77381, 2.02679, 0.38393, 1.25298, 0.38393, 1.25298, 0.38393, 1.25298, 0.76786, 2.01339, 0.38244, 1.24554, 0.38244, 1.24554, 0.38244, 1.24554, 0.38244, 1.24554, 0.38244, 1.24554, 0.76488, 2.0067, 0.3817, 1.24182, 0.3817, 1.24182]
 }
 flops_lambda = {
  'resnet50':1,
+  'mobilenet_v2':1
 }
 
 # Load pretrained model
@@ -298,13 +300,17 @@ def graph_mobilenet_v2(pr_target):
     current_index = 0
     cat_cfg = [2,3,4,3,3,1]
     c_index, i_index = 0, 0 
+
+    f_index = 0
     # Sort the weights and get the pruning threshold
     for name, module in origin_model.named_modules():
 
         if isinstance(module, InvertedResidual):
             conv1_weight = module.conv[3].weight.data
             if len(module.conv) == 5: #expand_ratio = 1
-                weights.append(conv1_weight.view(-1))
+                #weights.append(conv1_weight.view(-1))
+                weights.append(torch.div(conv1_weight.view(-1),math.pow(flops_cfg[args.cfg][f_index],flops_lambda[args.cfg])))
+                f_index += 1
             else:   
                 conv2_weight = module.conv[6].weight.data       
                 if i_index == 0:
@@ -313,10 +319,11 @@ def graph_mobilenet_v2(pr_target):
                     conv_weight = torch.cat((conv_weight,torch.cat((conv1_weight.view(-1),conv2_weight.view(-1)),0)),0)
                 i_index += 1
                 if i_index == cat_cfg[c_index]:
+                    conv_weight = torch.div(conv_weight,math.pow(flops_cfg[args.cfg][f_index],flops_lambda[args.cfg]))
                     weights.append(conv_weight)  
                     c_index += 1
                     i_index = 0
-                
+                    f_index += 1      
 
     #weights.append(origin_model.state_dict()['features.18.0.weight'].view(-1))  #lastlayer          
 

@@ -22,3 +22,327 @@
 04/16 09:35:17 AM | Channels Prune Rate: 11108/17056 (34.87%)
 04/16 09:35:17 AM | Params Compress Rate: 2.14 M/3.50 M(39.05%)
 04/16 09:35:17 AM | FLOPS Compress Rate: 162.86 M/328.77 M(50.46%)
+04/29 11:41:30 AM | --------------UnPrune Model--------------
+04/29 11:41:30 AM | Channels: 17056
+04/29 11:41:30 AM | Params: 3.50 M 
+04/29 11:41:30 AM | FLOPS: 328.77 M 
+04/29 11:41:30 AM | --------------Prune Model--------------
+04/29 11:41:30 AM | Channels:10297
+04/29 11:41:30 AM | Params: 1.98 M
+04/29 11:41:30 AM | FLOPS: 150.80 M
+04/29 11:41:30 AM | --------------Compress Rate--------------
+04/29 11:41:30 AM | Channels Prune Rate: 10297/17056 (39.63%)
+04/29 11:41:30 AM | Params Compress Rate: 1.98 M/3.50 M(43.44%)
+04/29 11:41:30 AM | FLOPS Compress Rate: 150.80 M/328.77 M(54.13%)
+04/29 11:47:51 AM | --------------UnPrune Model--------------
+04/29 11:47:51 AM | Channels: 17056
+04/29 11:47:51 AM | Params: 3.50 M 
+04/29 11:47:51 AM | FLOPS: 328.77 M 
+04/29 11:47:51 AM | --------------Prune Model--------------
+04/29 11:47:51 AM | Channels:10297
+04/29 11:47:51 AM | Params: 1.96 M
+04/29 11:47:51 AM | FLOPS: 132.15 M
+04/29 11:47:51 AM | --------------Compress Rate--------------
+04/29 11:47:51 AM | Channels Prune Rate: 10297/17056 (39.63%)
+04/29 11:47:51 AM | Params Compress Rate: 1.96 M/3.50 M(44.03%)
+04/29 11:47:51 AM | FLOPS Compress Rate: 132.15 M/328.77 M(59.81%)
+04/29 11:48:05 AM | --------------UnPrune Model--------------
+04/29 11:48:05 AM | Channels: 17056
+04/29 11:48:05 AM | Params: 3.50 M 
+04/29 11:48:05 AM | FLOPS: 328.77 M 
+04/29 11:48:05 AM | --------------Prune Model--------------
+04/29 11:48:05 AM | Channels:13378
+04/29 11:48:05 AM | Params: 2.55 M
+04/29 11:48:05 AM | FLOPS: 197.20 M
+04/29 11:48:05 AM | --------------Compress Rate--------------
+04/29 11:48:05 AM | Channels Prune Rate: 13378/17056 (21.56%)
+04/29 11:48:05 AM | Params Compress Rate: 2.55 M/3.50 M(27.38%)
+04/29 11:48:05 AM | FLOPS Compress Rate: 197.20 M/328.77 M(40.02%)
+04/29 11:48:37 AM | --------------UnPrune Model--------------
+04/29 11:48:37 AM | Channels: 17056
+04/29 11:48:37 AM | Params: 3.50 M 
+04/29 11:48:37 AM | FLOPS: 328.77 M 
+04/29 11:48:37 AM | --------------Prune Model--------------
+04/29 11:48:37 AM | Channels:13328
+04/29 11:48:37 AM | Params: 2.53 M
+04/29 11:48:37 AM | FLOPS: 204.52 M
+04/29 11:48:37 AM | --------------Compress Rate--------------
+04/29 11:48:37 AM | Channels Prune Rate: 13328/17056 (21.86%)
+04/29 11:48:37 AM | Params Compress Rate: 2.53 M/3.50 M(27.92%)
+04/29 11:48:37 AM | FLOPS Compress Rate: 204.52 M/328.77 M(37.79%)
+04/29 11:49:06 AM | --------------UnPrune Model--------------
+04/29 11:49:06 AM | Channels: 17056
+04/29 11:49:06 AM | Params: 3.50 M 
+04/29 11:49:06 AM | FLOPS: 328.77 M 
+04/29 11:49:06 AM | --------------Prune Model--------------
+04/29 11:49:06 AM | Channels:12956
+04/29 11:49:06 AM | Params: 2.51 M
+04/29 11:49:06 AM | FLOPS: 201.14 M
+04/29 11:49:06 AM | --------------Compress Rate--------------
+04/29 11:49:06 AM | Channels Prune Rate: 12956/17056 (24.04%)
+04/29 11:49:06 AM | Params Compress Rate: 2.51 M/3.50 M(28.39%)
+04/29 11:49:06 AM | FLOPS Compress Rate: 201.14 M/328.77 M(38.82%)
+04/29 11:52:54 AM | --------------UnPrune Model--------------
+04/29 11:52:54 AM | Channels: 17056
+04/29 11:52:54 AM | Params: 3.50 M 
+04/29 11:52:54 AM | FLOPS: 328.77 M 
+04/29 11:52:54 AM | --------------Prune Model--------------
+04/29 11:52:54 AM | Channels:12656
+04/29 11:52:54 AM | Params: 2.51 M
+04/29 11:52:54 AM | FLOPS: 182.21 M
+04/29 11:52:54 AM | --------------Compress Rate--------------
+04/29 11:52:54 AM | Channels Prune Rate: 12656/17056 (25.80%)
+04/29 11:52:54 AM | Params Compress Rate: 2.51 M/3.50 M(28.28%)
+04/29 11:52:54 AM | FLOPS Compress Rate: 182.21 M/328.77 M(44.58%)
+04/29 11:53:12 AM | --------------UnPrune Model--------------
+04/29 11:53:12 AM | Channels: 17056
+04/29 11:53:12 AM | Params: 3.50 M 
+04/29 11:53:12 AM | FLOPS: 328.77 M 
+04/29 11:53:12 AM | --------------Prune Model--------------
+04/29 11:53:12 AM | Channels:12941
+04/29 11:53:12 AM | Params: 2.57 M
+04/29 11:53:12 AM | FLOPS: 186.14 M
+04/29 11:53:12 AM | --------------Compress Rate--------------
+04/29 11:53:12 AM | Channels Prune Rate: 12941/17056 (24.13%)
+04/29 11:53:12 AM | Params Compress Rate: 2.57 M/3.50 M(26.81%)
+04/29 11:53:12 AM | FLOPS Compress Rate: 186.14 M/328.77 M(43.38%)
+04/29 11:53:18 AM | --------------UnPrune Model--------------
+04/29 11:53:18 AM | Channels: 17056
+04/29 11:53:18 AM | Params: 3.50 M 
+04/29 11:53:18 AM | FLOPS: 328.77 M 
+04/29 11:53:18 AM | --------------Prune Model--------------
+04/29 11:53:18 AM | Channels:13708
+04/29 11:53:18 AM | Params: 2.72 M
+04/29 11:53:18 AM | FLOPS: 201.36 M
+04/29 11:53:18 AM | --------------Compress Rate--------------
+04/29 11:53:18 AM | Channels Prune Rate: 13708/17056 (19.63%)
+04/29 11:53:18 AM | Params Compress Rate: 2.72 M/3.50 M(22.46%)
+04/29 11:53:18 AM | FLOPS Compress Rate: 201.36 M/328.77 M(38.75%)
+04/29 11:53:44 AM | --------------UnPrune Model--------------
+04/29 11:53:44 AM | Channels: 17056
+04/29 11:53:44 AM | Params: 3.50 M 
+04/29 11:53:44 AM | FLOPS: 328.77 M 
+04/29 11:53:44 AM | --------------Prune Model--------------
+04/29 11:53:44 AM | Channels:13708
+04/29 11:53:44 AM | Params: 2.72 M
+04/29 11:53:44 AM | FLOPS: 201.36 M
+04/29 11:53:44 AM | --------------Compress Rate--------------
+04/29 11:53:44 AM | Channels Prune Rate: 13708/17056 (19.63%)
+04/29 11:53:44 AM | Params Compress Rate: 2.72 M/3.50 M(22.46%)
+04/29 11:53:44 AM | FLOPS Compress Rate: 201.36 M/328.77 M(38.75%)
+04/29 11:54:19 AM | --------------UnPrune Model--------------
+04/29 11:54:19 AM | Channels: 17056
+04/29 11:54:19 AM | Params: 3.50 M 
+04/29 11:54:19 AM | FLOPS: 328.77 M 
+04/29 11:54:19 AM | --------------Prune Model--------------
+04/29 11:54:19 AM | Channels:14230
+04/29 11:54:19 AM | Params: 2.76 M
+04/29 11:54:19 AM | FLOPS: 214.68 M
+04/29 11:54:19 AM | --------------Compress Rate--------------
+04/29 11:54:19 AM | Channels Prune Rate: 14230/17056 (16.57%)
+04/29 11:54:19 AM | Params Compress Rate: 2.76 M/3.50 M(21.24%)
+04/29 11:54:19 AM | FLOPS Compress Rate: 214.68 M/328.77 M(34.70%)
+04/29 11:58:40 AM | --------------UnPrune Model--------------
+04/29 11:58:40 AM | Channels: 17056
+04/29 11:58:40 AM | Params: 3.50 M 
+04/29 11:58:40 AM | FLOPS: 328.77 M 
+04/29 11:58:40 AM | --------------Prune Model--------------
+04/29 11:58:40 AM | Channels:14230
+04/29 11:58:40 AM | Params: 2.76 M
+04/29 11:58:40 AM | FLOPS: 214.68 M
+04/29 11:58:40 AM | --------------Compress Rate--------------
+04/29 11:58:40 AM | Channels Prune Rate: 14230/17056 (16.57%)
+04/29 11:58:40 AM | Params Compress Rate: 2.76 M/3.50 M(21.24%)
+04/29 11:58:40 AM | FLOPS Compress Rate: 214.68 M/328.77 M(34.70%)
+04/29 11:59:01 AM | --------------UnPrune Model--------------
+04/29 11:59:01 AM | Channels: 17056
+04/29 11:59:01 AM | Params: 3.50 M 
+04/29 11:59:01 AM | FLOPS: 328.77 M 
+04/29 11:59:01 AM | --------------Prune Model--------------
+04/29 11:59:01 AM | Channels:14342
+04/29 11:59:01 AM | Params: 2.76 M
+04/29 11:59:01 AM | FLOPS: 218.18 M
+04/29 11:59:01 AM | --------------Compress Rate--------------
+04/29 11:59:01 AM | Channels Prune Rate: 14342/17056 (15.91%)
+04/29 11:59:01 AM | Params Compress Rate: 2.76 M/3.50 M(21.34%)
+04/29 11:59:01 AM | FLOPS Compress Rate: 218.18 M/328.77 M(33.64%)
+04/29 12:04:57 PM | --------------UnPrune Model--------------
+04/29 12:04:57 PM | Channels: 17056
+04/29 12:04:57 PM | Params: 3.50 M 
+04/29 12:04:57 PM | FLOPS: 328.77 M 
+04/29 12:04:57 PM | --------------Prune Model--------------
+04/29 12:04:57 PM | Channels:14342
+04/29 12:04:57 PM | Params: 2.79 M
+04/29 12:04:57 PM | FLOPS: 241.00 M
+04/29 12:04:57 PM | --------------Compress Rate--------------
+04/29 12:04:57 PM | Channels Prune Rate: 14342/17056 (15.91%)
+04/29 12:04:57 PM | Params Compress Rate: 2.79 M/3.50 M(20.52%)
+04/29 12:04:57 PM | FLOPS Compress Rate: 241.00 M/328.77 M(26.70%)
+04/29 12:05:03 PM | --------------UnPrune Model--------------
+04/29 12:05:03 PM | Channels: 17056
+04/29 12:05:03 PM | Params: 3.50 M 
+04/29 12:05:03 PM | FLOPS: 328.77 M 
+04/29 12:05:03 PM | --------------Prune Model--------------
+04/29 12:05:03 PM | Channels:13407
+04/29 12:05:03 PM | Params: 2.57 M
+04/29 12:05:03 PM | FLOPS: 217.92 M
+04/29 12:05:03 PM | --------------Compress Rate--------------
+04/29 12:05:03 PM | Channels Prune Rate: 13407/17056 (21.39%)
+04/29 12:05:03 PM | Params Compress Rate: 2.57 M/3.50 M(26.66%)
+04/29 12:05:03 PM | FLOPS Compress Rate: 217.92 M/328.77 M(33.72%)
+04/29 12:05:15 PM | --------------UnPrune Model--------------
+04/29 12:05:15 PM | Channels: 17056
+04/29 12:05:15 PM | Params: 3.50 M 
+04/29 12:05:15 PM | FLOPS: 328.77 M 
+04/29 12:05:15 PM | --------------Prune Model--------------
+04/29 12:05:15 PM | Channels:13157
+04/29 12:05:15 PM | Params: 2.52 M
+04/29 12:05:15 PM | FLOPS: 210.83 M
+04/29 12:05:15 PM | --------------Compress Rate--------------
+04/29 12:05:15 PM | Channels Prune Rate: 13157/17056 (22.86%)
+04/29 12:05:15 PM | Params Compress Rate: 2.52 M/3.50 M(28.19%)
+04/29 12:05:15 PM | FLOPS Compress Rate: 210.83 M/328.77 M(35.87%)
+04/29 12:05:22 PM | --------------UnPrune Model--------------
+04/29 12:05:22 PM | Channels: 17056
+04/29 12:05:22 PM | Params: 3.50 M 
+04/29 12:05:22 PM | FLOPS: 328.77 M 
+04/29 12:05:22 PM | --------------Prune Model--------------
+04/29 12:05:22 PM | Channels:12630
+04/29 12:05:22 PM | Params: 2.40 M
+04/29 12:05:22 PM | FLOPS: 197.81 M
+04/29 12:05:22 PM | --------------Compress Rate--------------
+04/29 12:05:22 PM | Channels Prune Rate: 12630/17056 (25.95%)
+04/29 12:05:22 PM | Params Compress Rate: 2.40 M/3.50 M(31.47%)
+04/29 12:05:22 PM | FLOPS Compress Rate: 197.81 M/328.77 M(39.83%)
+04/29 12:18:54 PM | --------------UnPrune Model--------------
+04/29 12:18:54 PM | Channels: 17056
+04/29 12:18:54 PM | Params: 3.50 M 
+04/29 12:18:54 PM | FLOPS: 328.77 M 
+04/29 12:18:54 PM | --------------Prune Model--------------
+04/29 12:18:54 PM | Channels:14647
+04/29 12:18:54 PM | Params: 2.82 M
+04/29 12:18:54 PM | FLOPS: 246.38 M
+04/29 12:18:54 PM | --------------Compress Rate--------------
+04/29 12:18:54 PM | Channels Prune Rate: 14647/17056 (14.12%)
+04/29 12:18:54 PM | Params Compress Rate: 2.82 M/3.50 M(19.44%)
+04/29 12:18:54 PM | FLOPS Compress Rate: 246.38 M/328.77 M(25.06%)
+04/29 12:19:35 PM | --------------UnPrune Model--------------
+04/29 12:19:35 PM | Channels: 17056
+04/29 12:19:35 PM | Params: 3.50 M 
+04/29 12:19:35 PM | FLOPS: 328.77 M 
+04/29 12:19:35 PM | --------------Prune Model--------------
+04/29 12:19:35 PM | Channels:14230
+04/29 12:19:35 PM | Params: 2.79 M
+04/29 12:19:35 PM | FLOPS: 237.25 M
+04/29 12:19:35 PM | --------------Compress Rate--------------
+04/29 12:19:35 PM | Channels Prune Rate: 14230/17056 (16.57%)
+04/29 12:19:35 PM | Params Compress Rate: 2.79 M/3.50 M(20.43%)
+04/29 12:19:35 PM | FLOPS Compress Rate: 237.25 M/328.77 M(27.84%)
+04/29 12:21:11 PM | --------------UnPrune Model--------------
+04/29 12:21:11 PM | Channels: 17056
+04/29 12:21:11 PM | Params: 3.50 M 
+04/29 12:21:11 PM | FLOPS: 328.77 M 
+04/29 12:21:11 PM | --------------Prune Model--------------
+04/29 12:21:11 PM | Channels:14230
+04/29 12:21:11 PM | Params: 2.76 M
+04/29 12:21:11 PM | FLOPS: 214.68 M
+04/29 12:21:11 PM | --------------Compress Rate--------------
+04/29 12:21:11 PM | Channels Prune Rate: 14230/17056 (16.57%)
+04/29 12:21:11 PM | Params Compress Rate: 2.76 M/3.50 M(21.24%)
+04/29 12:21:11 PM | FLOPS Compress Rate: 214.68 M/328.77 M(34.70%)
+04/29 12:21:30 PM | --------------UnPrune Model--------------
+04/29 12:21:30 PM | Channels: 17056
+04/29 12:21:30 PM | Params: 3.50 M 
+04/29 12:21:30 PM | FLOPS: 328.77 M 
+04/29 12:21:30 PM | --------------Prune Model--------------
+04/29 12:21:30 PM | Channels:14230
+04/29 12:21:30 PM | Params: 2.79 M
+04/29 12:21:30 PM | FLOPS: 237.25 M
+04/29 12:21:30 PM | --------------Compress Rate--------------
+04/29 12:21:30 PM | Channels Prune Rate: 14230/17056 (16.57%)
+04/29 12:21:30 PM | Params Compress Rate: 2.79 M/3.50 M(20.43%)
+04/29 12:21:30 PM | FLOPS Compress Rate: 237.25 M/328.77 M(27.84%)
+04/29 12:21:42 PM | --------------UnPrune Model--------------
+04/29 12:21:42 PM | Channels: 17056
+04/29 12:21:42 PM | Params: 3.50 M 
+04/29 12:21:42 PM | FLOPS: 328.77 M 
+04/29 12:21:42 PM | --------------Prune Model--------------
+04/29 12:21:42 PM | Channels:14230
+04/29 12:21:42 PM | Params: 2.76 M
+04/29 12:21:42 PM | FLOPS: 214.68 M
+04/29 12:21:42 PM | --------------Compress Rate--------------
+04/29 12:21:42 PM | Channels Prune Rate: 14230/17056 (16.57%)
+04/29 12:21:42 PM | Params Compress Rate: 2.76 M/3.50 M(21.24%)
+04/29 12:21:42 PM | FLOPS Compress Rate: 214.68 M/328.77 M(34.70%)
+04/29 12:21:49 PM | --------------UnPrune Model--------------
+04/29 12:21:49 PM | Channels: 17056
+04/29 12:21:49 PM | Params: 3.50 M 
+04/29 12:21:49 PM | FLOPS: 328.77 M 
+04/29 12:21:49 PM | --------------Prune Model--------------
+04/29 12:21:49 PM | Channels:14363
+04/29 12:21:49 PM | Params: 2.79 M
+04/29 12:21:49 PM | FLOPS: 217.69 M
+04/29 12:21:49 PM | --------------Compress Rate--------------
+04/29 12:21:49 PM | Channels Prune Rate: 14363/17056 (15.79%)
+04/29 12:21:49 PM | Params Compress Rate: 2.79 M/3.50 M(20.30%)
+04/29 12:21:49 PM | FLOPS Compress Rate: 217.69 M/328.77 M(33.79%)
+04/29 12:21:57 PM | --------------UnPrune Model--------------
+04/29 12:21:57 PM | Channels: 17056
+04/29 12:21:57 PM | Params: 3.50 M 
+04/29 12:21:57 PM | FLOPS: 328.77 M 
+04/29 12:21:57 PM | --------------Prune Model--------------
+04/29 12:21:57 PM | Channels:14920
+04/29 12:21:57 PM | Params: 2.92 M
+04/29 12:21:57 PM | FLOPS: 234.21 M
+04/29 12:21:57 PM | --------------Compress Rate--------------
+04/29 12:21:57 PM | Channels Prune Rate: 14920/17056 (12.52%)
+04/29 12:21:57 PM | Params Compress Rate: 2.92 M/3.50 M(16.57%)
+04/29 12:21:57 PM | FLOPS Compress Rate: 234.21 M/328.77 M(28.76%)
+04/29 12:22:07 PM | --------------UnPrune Model--------------
+04/29 12:22:07 PM | Channels: 17056
+04/29 12:22:07 PM | Params: 3.50 M 
+04/29 12:22:07 PM | FLOPS: 328.77 M 
+04/29 12:22:07 PM | --------------Prune Model--------------
+04/29 12:22:07 PM | Channels:13957
+04/29 12:22:07 PM | Params: 2.70 M
+04/29 12:22:07 PM | FLOPS: 208.96 M
+04/29 12:22:07 PM | --------------Compress Rate--------------
+04/29 12:22:07 PM | Channels Prune Rate: 13957/17056 (18.17%)
+04/29 12:22:07 PM | Params Compress Rate: 2.70 M/3.50 M(22.90%)
+04/29 12:22:07 PM | FLOPS Compress Rate: 208.96 M/328.77 M(36.44%)
+04/29 12:22:15 PM | --------------UnPrune Model--------------
+04/29 12:22:15 PM | Channels: 17056
+04/29 12:22:15 PM | Params: 3.50 M 
+04/29 12:22:15 PM | FLOPS: 328.77 M 
+04/29 12:22:15 PM | --------------Prune Model--------------
+04/29 12:22:15 PM | Channels:13800
+04/29 12:22:15 PM | Params: 2.67 M
+04/29 12:22:15 PM | FLOPS: 204.69 M
+04/29 12:22:15 PM | --------------Compress Rate--------------
+04/29 12:22:15 PM | Channels Prune Rate: 13800/17056 (19.09%)
+04/29 12:22:15 PM | Params Compress Rate: 2.67 M/3.50 M(23.83%)
+04/29 12:22:15 PM | FLOPS Compress Rate: 204.69 M/328.77 M(37.74%)
+04/29 12:22:59 PM | --------------UnPrune Model--------------
+04/29 12:22:59 PM | Channels: 17056
+04/29 12:22:59 PM | Params: 3.50 M 
+04/29 12:22:59 PM | FLOPS: 328.77 M 
+04/29 12:22:59 PM | --------------Prune Model--------------
+04/29 12:22:59 PM | Channels:13257
+04/29 12:22:59 PM | Params: 2.57 M
+04/29 12:22:59 PM | FLOPS: 211.71 M
+04/29 12:22:59 PM | --------------Compress Rate--------------
+04/29 12:22:59 PM | Channels Prune Rate: 13257/17056 (22.27%)
+04/29 12:22:59 PM | Params Compress Rate: 2.57 M/3.50 M(26.57%)
+04/29 12:22:59 PM | FLOPS Compress Rate: 211.71 M/328.77 M(35.61%)
+04/29 12:23:30 PM | --------------UnPrune Model--------------
+04/29 12:23:30 PM | Channels: 17056
+04/29 12:23:30 PM | Params: 3.50 M 
+04/29 12:23:30 PM | FLOPS: 328.77 M 
+04/29 12:23:30 PM | --------------Prune Model--------------
+04/29 12:23:30 PM | Channels:13257
+04/29 12:23:30 PM | Params: 2.57 M
+04/29 12:23:30 PM | FLOPS: 211.71 M
+04/29 12:23:30 PM | --------------Compress Rate--------------
+04/29 12:23:30 PM | Channels Prune Rate: 13257/17056 (22.27%)
+04/29 12:23:30 PM | Params Compress Rate: 2.57 M/3.50 M(26.57%)
+04/29 12:23:30 PM | FLOPS Compress Rate: 211.71 M/328.77 M(35.61%)
