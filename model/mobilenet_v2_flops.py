@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import math
 
-# TensorFlow does NOT count "batchnorm" into FLOPs. If you profile with custom rules to set bn as zero, you should be able to get similar numbers.
+
 def conv_bn(inp, oup, stride):
     return nn.Sequential(
         nn.Conv2d(inp, oup, 3, stride, 1, bias=False),
@@ -61,10 +61,10 @@ class InvertedResidual(nn.Module):
 
 
 class MobileNetV2(nn.Module):
-    def __init__(self, n_class=1000, input_size=224, width_mult=1., layer_cfg=None):
+    def __init__(self, n_class=1000, input_size=224, width_mult=1., layer_cfg=None,hidden_cfg=None):
         super(MobileNetV2, self).__init__()
         block = InvertedResidual
-        layer_index = 0
+        layer_index = -1
         input_channel = 32
         last_channel = 1280
         interverted_residual_setting = [
@@ -87,6 +87,7 @@ class MobileNetV2(nn.Module):
             [6, 160, 1, 1],
             [6, 320, 1, 1],
         ]
+        hidden_dim_setting = [96,144,144,192,192,192,384,384,384,384,576,576,576,960,960,960]
         
 
         # building first layer
@@ -95,21 +96,20 @@ class MobileNetV2(nn.Module):
         self.last_channel = int(last_channel * width_mult) if width_mult > 1.0 else last_channel
         self.features = [conv_bn(3, input_channel, 2)]
         # building inverted residual blocks
-        lastc = 32
         for t, c, n, s in interverted_residual_setting:
             if layer_cfg == None:
-                output_channel = int(c * width_mult)
                 hidden_dim = input_channel * t
+                output_channel = int(c * width_mult)
             else:
-                output_channel = int(c * (1 - layer_cfg[layer_index]))
-                if layer_index == 0:
+                output_channel = int(c * (1-layer_cfg[layer_index+1]))
+                if layer_index == -1:
                     hidden_dim = 32
                 else:
-                    hidden_dim = int(lastc * t * (1 - layer_cfg[layer_index - 1]))
+                    hidden_dim = int(hidden_dim_setting[layer_index] * (1 - hidden_cfg[layer_index]))
+                layer_index += 1
             self.features.append(block(input_channel,hidden_dim,output_channel, s, expand_ratio=t))
             input_channel = output_channel
-            layer_index += 1
-            lastc = c
+            
 
         # building last several layers
         self.features.append(conv_1x1_bn(input_channel, self.last_channel))
@@ -162,19 +162,17 @@ class MobileNetV2(nn.Module):
                 n = m.weight.size(1)
                 m.weight.data.normal_(0, 0.01)
                 m.bias.data.zero_()
-def mobilenet_v2(layer_cfg=None):
-    return MobileNetV2(layer_cfg=layer_cfg)
+def mobilenet_v2(layer_cfg=None,hidden_cfg=None):
+    return MobileNetV2(layer_cfg=layer_cfg,hidden_cfg=hidden_cfg)
 
 if __name__ == "__main__":
-    model = MobileNetV2(layer_cfg=[0]*17)
+    model = MobileNetV2(layer_cfg=[0.5]*17,hidden_cfg=[0.5]*16)
 
-    '''
     for name, module in model.named_modules():
         if isinstance(module, nn.Conv2d):
             for param_tensor in module.state_dict():
                 print(param_tensor,'\t',module.state_dict()[param_tensor].size())
-    '''
     ckpt = torch.load('/Users/zhangyuxin/Documents/MAC/pretrain_model/mobilenet_v2.pth.tar',map_location='cpu')
-    for param_tensor in model.state_dict():
-        print(param_tensor, '\t', model.state_dict()[param_tensor].size())
+    #for param_tensor in model.state_dict():
+        #print(param_tensor, '\t', model.state_dict()[param_tensor].size())
     model.load_state_dict(ckpt)

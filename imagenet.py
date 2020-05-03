@@ -292,19 +292,37 @@ def graph_mobilenet_v1(pr_target):
         pass
     return model, cfg   
 
+
 def graph_mobilenet_v2(pr_target):
-    pr_cfg = []
+
+    hidden_cfg = []
     weights = []
 
     cfg = []
+    all_cfg =[]
     centroids_state_dict = {}
     prune_state_dict = []
     current_index = 0
+
+    #start_time = time.time()
+    # Sort the weights and get the pruning threshold
+    for name, module in origin_model.named_modules():
+
+        if isinstance(module, InvertedResidual):
+            conv1_weight = module.conv[0].weight.data
+            if len(module.conv) == 5: #expand_ratio = 1
+                continue
+                #weights.append(conv1_weight.view(-1))
+                #weights.append(torch.div(conv1_weight.view(-1),math.pow(flops_cfg[args.cfg][f_index],flops_lambda[args.cfg])))
+            else:   
+                #conv2_weight = module.conv[3].weight.data       
+                #conv_weight = torch.cat((conv1_weight.view(-1),conv2_weight.view(-1)),0)
+                weights.append(conv1_weight.view(-1))  
+                 
     cat_cfg = [2,3,4,3,3,1]
     c_index, i_index = 0, 0 
 
     f_index = 0
-    #start_time = time.time()
     # Sort the weights and get the pruning threshold
     for name, module in origin_model.named_modules():
 
@@ -326,7 +344,7 @@ def graph_mobilenet_v2(pr_target):
                     weights.append(conv_weight)  
                     c_index += 1
                     i_index = 0
-                    f_index += 1      
+                    f_index += 1  
 
     #weights.append(origin_model.state_dict()['features.18.0.weight'].view(-1))  #lastlayer          
 
@@ -336,15 +354,19 @@ def graph_mobilenet_v2(pr_target):
     threshold = preserve_weight[preserve_num - 1]
 
     # Based on the pruning threshold, the prune cfg of each layer is obtained
-    for weight in weights:
-        pr_cfg.append(torch.sum(torch.lt(torch.abs(weight), threshold)).item() / weight.size(0))
-    #print(pr_cfg)
+    i = 0
+    for i, weight in enumerate(weights):
+        all_cfg.append(torch.sum(torch.lt(torch.abs(weight), threshold)).item() / weight.size(0))
+
+
+    hidden_cfg = all_cfg[:16]
     graph_cfg = []
-    graph_cfg.append(pr_cfg[0])
+    graph_cfg.append(all_cfg[16])
     for i in range(6):
         for j in range(cat_cfg[i]):
-            graph_cfg.append(pr_cfg[i+1])
-    #print(graph_cfg)
+            graph_cfg.append(all_cfg[i+17])
+    #print(len(hidden_cfg))
+    #print(len(graph_cfg))
     #current_time = time.time()
     #print("Find Structure Time {:.2f}s".format(current_time - start_time))
 
@@ -370,7 +392,7 @@ def graph_mobilenet_v2(pr_target):
 
                 conv1_weight = module.conv[0].weight.data
                 _, _, centroids, indice1 = graph_weight(conv1_weight,
-                                                       int(conv1_weight.size(0) * (1 - graph_cfg[current_index-1])), logger)
+                                                       int(conv1_weight.size(0) * (1 - hidden_cfg[current_index-1])), logger)
 
                 centroids_state_dict[name + '.conv.0.weight'] = centroids.reshape((-1, conv1_weight.size(1), conv1_weight.size(2), conv1_weight.size(3)))
                 prune_state_dict.append(name + '.conv.1.weight')
@@ -380,7 +402,7 @@ def graph_mobilenet_v2(pr_target):
 
                 conv2_weight = module.conv[3].weight.data
                 _, _, centroids, indice2 = graph_weight(conv2_weight,
-                                                       int(conv2_weight.size(0) * (1 - graph_cfg[current_index-1])), logger)
+                                                       int(conv2_weight.size(0) * (1 - hidden_cfg[current_index-1])), logger)
                 centroids_state_dict[name + '.conv.3.weight'] = centroids
                 prune_state_dict.append(name + '.conv.4.weight')
                 prune_state_dict.append(name + '.conv.4.bias')
@@ -405,6 +427,13 @@ def graph_mobilenet_v2(pr_target):
 
                 lastindice = indice3
                 current_index += 1
+
+    prune_state_dict.append('features.18.1.weight')
+    prune_state_dict.append('features.18.1.bias')
+    prune_state_dict.append('features.18.1.running_var')
+    prune_state_dict.append('features.18.1.running_mean')
+    prune_state_dict.append('classifier.1.weight')
+    prune_state_dict.append('classifier.1.bias')
     '''
     #LastLayer
     conv_weight = origin_model.state_dict()['features.18.0.weight']
@@ -417,14 +446,14 @@ def graph_mobilenet_v2(pr_target):
     prune_state_dict.append('features.18.1.running_mean')
     prune_state_dict.append('classifier.1.weight')
     prune_state_dict.append('classifier.1.bias')
-    '''
-
+    
+'''
     if args.init_method == 'random_project':
         centroids_state_dict['features.18.0.weight'] = random_project(origin_model.state_dict()['features.18.0.weight'], len(lastindice))
     else:
         centroids_state_dict['features.18.0.weight'] = direct_project(origin_model.state_dict()['features.18.0.weight'], lastindice)
     
-    model = import_module(f'model.{args.arch}').mobilenet_v2(layer_cfg=graph_cfg).to(device)
+    model = import_module(f'model.{args.arch}').mobilenet_v2(layer_cfg=graph_cfg,hidden_cfg=hidden_cfg).to(device)
 
     if args.init_method == 'random_project' or args.init_method == 'direct_project':
         pretrain_state_dict = origin_model.state_dict()

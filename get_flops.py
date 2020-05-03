@@ -530,14 +530,33 @@ def graph_mobilenet_v1(pr_target):
     return model
 
 
+
 def graph_mobilenet_v2(pr_target):
-    pr_cfg = []
+
+    hidden_cfg = []
     weights = []
 
     cfg = []
+    all_cfg =[]
     centroids_state_dict = {}
     prune_state_dict = []
     current_index = 0
+
+    #start_time = time.time()
+    # Sort the weights and get the pruning threshold
+    for name, module in origin_model.named_modules():
+
+        if isinstance(module, InvertedResidual):
+            conv1_weight = module.conv[0].weight.data
+            if len(module.conv) == 5: #expand_ratio = 1
+                continue
+                #weights.append(conv1_weight.view(-1))
+                #weights.append(torch.div(conv1_weight.view(-1),math.pow(flops_cfg[args.cfg][f_index],flops_lambda[args.cfg])))
+            else:   
+                #conv2_weight = module.conv[3].weight.data       
+                #conv_weight = torch.cat((conv1_weight.view(-1),conv2_weight.view(-1)),0)
+                weights.append(conv1_weight.view(-1))  
+                 
     cat_cfg = [2,3,4,3,3,1]
     c_index, i_index = 0, 0 
 
@@ -563,9 +582,7 @@ def graph_mobilenet_v2(pr_target):
                     weights.append(conv_weight)  
                     c_index += 1
                     i_index = 0
-                    f_index += 1
-                
-
+                    f_index += 1  
     #weights.append(origin_model.state_dict()['features.18.0.weight'].view(-1))  #lastlayer          
 
     all_weights = torch.cat(weights, 0)
@@ -574,18 +591,22 @@ def graph_mobilenet_v2(pr_target):
     threshold = preserve_weight[preserve_num - 1]
 
     # Based on the pruning threshold, the prune cfg of each layer is obtained
-    for weight in weights:
-        pr_cfg.append(torch.sum(torch.lt(torch.abs(weight), threshold)).item() / weight.size(0))
-    print(pr_cfg)
+    i = 0
+    for i, weight in enumerate(weights):
+        all_cfg.append(torch.sum(torch.lt(torch.abs(weight), threshold)).item() / weight.size(0))
+
+
+    hidden_cfg = all_cfg[:16]
     graph_cfg = []
-    graph_cfg.append(pr_cfg[0])
+    graph_cfg.append(all_cfg[16])
     for i in range(6):
         for j in range(cat_cfg[i]):
-            graph_cfg.append(pr_cfg[i+1])
-    #print(graph_cfg)
+            graph_cfg.append(all_cfg[i+17])
+    print(hidden_cfg)
+    print(graph_cfg)
 
-    model = import_module(f'model.{args.arch}_flops').mobilenet_v2(layer_cfg=graph_cfg).to(device)
 
+    model = import_module(f'model.{args.arch}_flops').mobilenet_v2(layer_cfg=graph_cfg,hidden_cfg=hidden_cfg).to(device)
 
     return model
 
@@ -627,8 +648,8 @@ def main():
         origin_model = import_module(f'model.{args.arch}').mobilenet_v1().to(device)
         origin_model.load_state_dict(ckpt['state_dict'])
     elif args.arch == 'mobilenet_v2':
-        origin_model = import_module(f'model.{args.arch}').mobilenet_v2().to(device)
-        origin_model.load_state_dict(ckpt)
+        origin_model = import_module(f'model.{args.arch}_flops').mobilenet_v2().to(device)
+        #origin_model.load_state_dict(ckpt)
     elif args.arch == 'vgg_cifar':
         origin_model = import_module(f'model.{args.arch}').VGG(args.cfg).to(device)
         origin_model.load_state_dict(ckpt['state_dict'])
