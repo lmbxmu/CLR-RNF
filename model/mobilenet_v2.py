@@ -87,6 +87,7 @@ class MobileNetV2(nn.Module):
             [6, 160, 1, 1],
             [6, 320, 1, 1],
         ]
+        hidden_dim_setting = [32,96,144,144,192,192,192,384,384,384,384,576,576,576,960,960,960]
         
 
         # building first layer
@@ -95,7 +96,6 @@ class MobileNetV2(nn.Module):
         self.last_channel = int(last_channel * width_mult) if width_mult > 1.0 else last_channel
         self.features = [conv_bn(3, input_channel, 2)]
         # building inverted residual blocks
-        lastc = 32
         for t, c, n, s in interverted_residual_setting:
             if layer_cfg == None:
                 output_channel = int(c * width_mult)
@@ -105,11 +105,10 @@ class MobileNetV2(nn.Module):
                 if layer_index == 0:
                     hidden_dim = 32
                 else:
-                    hidden_dim = int(lastc * t * (1 - layer_cfg[layer_index - 1]))
+                    hidden_dim = int(hidden_dim_setting[layer_index] * (1 - hidden_dim_cfg[layer_index]))
             self.features.append(block(input_channel,hidden_dim,output_channel, s, expand_ratio=t))
             input_channel = output_channel
             layer_index += 1
-            lastc = c
 
         # building last several layers
         self.features.append(conv_1x1_bn(input_channel, self.last_channel))
@@ -166,7 +165,7 @@ def mobilenet_v2(layer_cfg=None):
     return MobileNetV2(layer_cfg=layer_cfg)
 
 if __name__ == "__main__":
-    model = MobileNetV2(layer_cfg=[0]*17)
+    model = MobileNetV2(layer_cfg=None)
 
     '''
     for name, module in model.named_modules():

@@ -117,23 +117,25 @@ def graph_weight(weight,m,logger):
     Wprune = Wprune.cpu()
     return m_matrix, s_matrix, Wprune, indicek
 
-def kmeans_weight(weight,m):
+def kmeans_weight(weight,m,logger):
     W = weight.cpu().clone()
+    filters_num = W.size(0)
     if weight.dim() == 4:  #Convolution layer
-        W = W.view(W.size(0), -1)
+        W = W.view(filters_num, -1)
     else:
         raise('The weight dim must be 4!')
     device = torch.device(f"cuda:{args.gpus[0]}") if torch.cuda.is_available() else 'cpu'
-
     kmeans = KMeans(n_clusters=m, random_state=0).fit(W.numpy())
+    indices = []
     if args.graph_gpu:
         m_matrix = F.normalize(torch.exp(-pairwise_distances(W.to(device),torch.from_numpy(kmeans.cluster_centers_).to(device))),1)
     else:
         m_matrix = F.normalize(torch.exp(-pairwise_distances(W,torch.from_numpy(kmeans.cluster_centers_))),1)
-    return m_matrix
+    indices = random.sample(range(0, W.size(0)-1), m)
+    return m_matrix, torch.from_numpy(kmeans.cluster_centers_), indices
 
 
-def random_weight(weight,m):
+def random_weight(weight,m,logger):
     
     W = weight.cpu().clone()
     if weight.dim() == 4:  #Convolution layer
@@ -148,7 +150,7 @@ def random_weight(weight,m):
     else:
         Wprune = torch.index_select(W,0,torch.tensor(list(indices)))
     m_matrix = F.normalize(torch.exp(-pairwise_distances(W,Wprune)),1)
-    return m_matrix
+    return m_matrix, Wprune, indices
 
 def getloss(B,A):
     #loss = torch.pow(torch.norm(A - torch.mm(B, B.t()),2),2)

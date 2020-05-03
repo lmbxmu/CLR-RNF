@@ -129,6 +129,13 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    '--graph_method',
+    type=str,
+    default='knn',
+    help='Method to recontruct the graph of filters. default:knn other:kmeans/random',
+)
+
+parser.add_argument(
     '--graph_gpu',
     action='store_true',
     help='run the graph algorithm with gpu or not. Default:False'

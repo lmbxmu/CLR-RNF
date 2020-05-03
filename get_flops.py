@@ -37,7 +37,7 @@ flops_lambda = {
  'vgg_cifar': 0.5,
  'resnet56':10,
  'resnet110':5,
- 'resnet50':1,
+ 'resnet50':0.4,
  'mobilenet_v2':1
 }
 
@@ -69,26 +69,27 @@ else:
 
 
 
+
 def graph_vgg(pr_target):    
 
-    pr_cfg = []
     weights = []
 
     cfg = []
+    pr_cfg = []
     centroids_state_dict = {}
     prune_state_dict = []
     indices = []
 
     current_layer = 0
     index = 0
-
+    #start_time = time.time()
     #Sort the weights and get the pruning threshold
     for name, module in origin_model.named_modules():
         if isinstance(module, nn.Conv2d):
             #conv_weight = module.weight.data
             conv_weight = torch.div(module.weight.data,math.pow(flops_cfg['vgg_cifar'][index],flops_lambda['vgg_cifar']))
             weights.append(conv_weight.view(-1))
-            index+=1
+            index += 1
 
     all_weights = torch.cat(weights,0)
     preserve_num = int(all_weights.size(0) * (1-pr_target))
@@ -98,15 +99,46 @@ def graph_vgg(pr_target):
     #Based on the pruning threshold, the prune cfg of each layer is obtained
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
+    print(pr_cfg)
+    #current_time = time.time()
+    #print("Find Structure Time {:.2f}s".format(current_time - start_time))
+    '''
+    q_cfg, p_cfg, pr_cfg = [], [], []
 
+    t1, t2 = 0, pr_target * all_weights.size(0)
+
+    #Based on the pruning threshold, the prune cfg of each layer is obtained
+    for i, weight in enumerate(weights):
+        p = torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0)#origin pr_rate
+        p_cfg.append(p)
+        q_cfg.append(p*math.exp(-p))#exp(-p) * p
+
+    for i, weight in enumerate(weights):
+        q_cfg[i] /= sum(q_cfg)#exp(-pi) * pi / sum{exp(-p) * p}
+        t1 += q_cfg[i] * weight.size(0) 
+
+    eta = t2/t1
+    print("eta {:.2f}".format(eta))
+    for i, q in enumerate(q_cfg):
+        pr_cfg.append(q * eta)
+        print("Layer[{}] p {:.2f} q {:.2f} pr_cfg {:.2f}".format(i, p_cfg[i], q_cfg[i], pr_cfg[i]))
+    '''
+
+    
     #Get the preseverd filters after pruning by graph method based on pruning proportion
     for name, module in origin_model.named_modules():
 
         if isinstance(module, nn.Conv2d):
 
             conv_weight = module.weight.data
-            _, _, centroids, indice = graph_weight(conv_weight, int(conv_weight.size(0) * (1 - pr_cfg[current_layer])),logger)
-
+            if args.graph_method == 'knn':
+                _, _, centroids, indice = graph_weight(conv_weight, int(conv_weight.size(0) * (1 - pr_cfg[current_layer])),logger)
+            elif args.graph_method == 'kmeans':
+                _, centroids, indice = kmeans_weight(conv_weight, int(conv_weight.size(0) * (1 - pr_cfg[current_layer])),logger)
+            elif args.graph_method == 'random':
+                _, centroids, indice = random_weight(conv_weight, int(conv_weight.size(0) * (1 - pr_cfg[current_layer])),logger)
+            else:
+                raise('Method not exist!')
             cfg.append(len(centroids))
             indices.append(indice)
             centroids_state_dict[name + '.weight'] = centroids.reshape((-1, conv_weight.size(1), conv_weight.size(2), conv_weight.size(3)))
@@ -123,22 +155,25 @@ def graph_vgg(pr_target):
             prune_state_dict.append(name + '.weight')
             prune_state_dict.append(name + '.bias')
 
+    #load weight
+
     model = import_module(f'model.{args.arch}').VGG(args.cfg, layer_cfg=cfg).to(device)
     return model
 
 
 def graph_resnet(pr_target):
 
-    pr_cfg = []
+    
     weights = []
 
     cfg = []
+    pr_cfg = []
     centroids_state_dict = {}
     prune_state_dict = []
 
     current_block = 0
     index = 0
-
+    #start_time = time.time()
     #Sort the weights and get the pruning threshold
     for name, module in origin_model.named_modules():
         if isinstance(module, ResBasicBlock):
@@ -156,7 +191,31 @@ def graph_resnet(pr_target):
     #Based on the pruning threshold, the prune cfg of each layer is obtained
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
-    print(pr_cfg)
+    #print(len(pr_cfg),pr_cfg)
+    #current_time = time.time()
+    #print("Find Structure Time {:.2f}s".format(current_time - start_time))
+    '''
+    #Based on the pruning threshold, the prune cfg of each layer is obtained
+    q_cfg, p_cfg, pr_cfg = [], [], []
+
+    t1, t2 = 0, pr_target * all_weights.size(0)
+
+    #Based on the pruning threshold, the prune cfg of each layer is obtained
+    for i, weight in enumerate(weights):
+        p = torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0)
+        p_cfg.append(p)
+        q_cfg.append(p*math.exp(-p))
+
+    for i, weight in enumerate(weights):
+        q_cfg[i] /= sum(q_cfg)
+        t1 += q_cfg[i] * weight.size(0)
+
+    eta = t2/t1
+    print("eta {:.6f}".format(eta))
+    for i, q in enumerate(q_cfg):
+        pr_cfg.append(q * eta)
+        print("Layer[{}] p {:.6f} q {:.6f} pr_cfg {:.6f}".format(i, p_cfg[i], q_cfg[i], pr_cfg[i]))
+    '''
     
     #Get the preseverd filters after pruning by graph method based on pruning proportion
 
@@ -166,7 +225,14 @@ def graph_resnet(pr_target):
 
             conv1_weight = module.conv1.weight.data
 
-            _, _, centroids, indice = graph_weight(conv1_weight, int(conv1_weight.size(0) * (1 - pr_cfg[current_block])),logger)
+            if args.graph_method == 'knn':
+                _, _, centroids, indice = graph_weight(conv1_weight, int(conv1_weight.size(0) * (1 - pr_cfg[current_block])),logger)
+            elif args.graph_method == 'kmeans':
+                _, centroids, indice = kmeans_weight(conv1_weight, int(conv1_weight.size(0) * (1 - pr_cfg[current_block])),logger)
+            elif args.graph_method == 'random':
+                _, centroids, indice = graph_weight(conv1_weight, int(conv1_weight.size(0) * (1 - pr_cfg[current_block])),logger)
+            else:
+                raise('Method not exist!')
             cfg.append(len(centroids))
             centroids_state_dict[name + '.conv1.weight'] = centroids
             if args.init_method == 'random_project':
@@ -181,10 +247,8 @@ def graph_resnet(pr_target):
 
             current_block+=1
 
-
     model = import_module(f'model.{args.arch}').resnet(args.cfg, layer_cfg=cfg).to(device)
     return model
-
 
 def graph_googlenet(pr_target):
 
@@ -197,7 +261,7 @@ def graph_googlenet(pr_target):
     indices = []
 
     current_index = 0
-
+    #start_time = time.time()
     for name, module in origin_model.named_modules():
 
         if isinstance(module, Inception):
@@ -217,13 +281,23 @@ def graph_googlenet(pr_target):
     #Based on the pruning threshold, the prune cfg of each layer is obtained
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
+    #current_time = time.time()
+    #print("Find Structure Time {:.2f}s".format(current_time - start_time))
     #Get the preseverd filters after pruning by graph method based on pruning proportion
     for name, module in origin_model.named_modules():
 
         if isinstance(module, Inception):
 
             branch3_weight = module.branch3x3[0].weight.data
-            _, _, centroids, indice = graph_weight(branch3_weight, int(branch3_weight.size(0) * (1 - pr_cfg[current_index])),logger)
+            
+            if args.graph_method == 'knn':
+                _, _, centroids, indice = graph_weight(branch3_weight, int(branch3_weight.size(0) * (1 - pr_cfg[current_index])),logger)
+            elif args.graph_method == 'kmeans':
+                _, centroids, indice = kmeans_weight(branch3_weight, int(branch3_weight.size(0) * (1 - pr_cfg[current_index])),logger)
+            elif args.graph_method == 'random':
+                _, centroids, indice = random_weight(branch3_weight, int(branch3_weight.size(0) * (1 - pr_cfg[current_index])),logger)
+            else:
+                raise('Method not exist!')
             cfg.append(len(centroids))
             centroids_state_dict[name + '.branch3x3.0.weight'] = centroids
             if args.init_method == 'random_project':
@@ -239,7 +313,15 @@ def graph_googlenet(pr_target):
 
             current_index+=1
             branch5_weight1 = module.branch5x5[0].weight.data
-            _, _, centroids, indice = graph_weight(branch5_weight1, int(branch5_weight1.size(0) * (1 - pr_cfg[current_index])),logger)
+
+            if args.graph_method == 'knn':
+                _, _, centroids, indice = graph_weight(branch5_weight1, int(branch5_weight1.size(0) * (1 - pr_cfg[current_index])),logger)
+            elif args.graph_method == 'kmeans':
+                _, centroids, indice = kmeans_weight(branch5_weight1, int(branch5_weight1.size(0) * (1 - pr_cfg[current_index])),logger)
+            elif args.graph_method == 'random':
+                _, centroids, indice = random_weight(branch5_weight1, int(branch5_weight1.size(0) * (1 - pr_cfg[current_index])),logger)
+            else:
+                raise('Method not exist!')
             cfg.append(len(centroids))
             indices.append(indice)
             centroids_state_dict[name + '.branch5x5.0.weight'] = centroids
@@ -252,7 +334,15 @@ def graph_googlenet(pr_target):
 
             current_index+=1
             branch5_weight2 = module.branch5x5[3].weight.data
-            _, _, centroids, indice = graph_weight(branch5_weight2, int(branch5_weight2.size(0) * (1 - pr_cfg[current_index])),logger)
+
+            if args.graph_method == 'knn':
+                _, _, centroids, indice = graph_weight(branch5_weight2, int(branch5_weight2.size(0) * (1 - pr_cfg[current_index])),logger)
+            elif args.graph_method == 'kmeans':
+                _, centroids, indice = kmeans_weight(branch5_weight2, int(branch5_weight2.size(0) * (1 - pr_cfg[current_index])),logger)
+            elif args.graph_method == 'random':
+                _, centroids, indice = random_weight(branch5_weight2, int(branch5_weight2.size(0) * (1 - pr_cfg[current_index])),logger)
+            else:
+                raise('Method not exist!')
             cfg.append(len(centroids))
             centroids_state_dict[name + '.branch5x5.3.weight'] = centroids.reshape((-1, branch5_weight2.size(1), branch5_weight2.size(2), branch5_weight2.size(3)))
 
@@ -266,6 +356,7 @@ def graph_googlenet(pr_target):
             prune_state_dict.append(name + '.branch5x5.4.bias')
             prune_state_dict.append(name + '.branch5x5.4.running_var')
             prune_state_dict.append(name + '.branch5x5.4.running_mean')
+
     model = import_module(f'model.{args.arch}').googlenet(layer_cfg=cfg).to(device)
     return model
 
@@ -536,7 +627,8 @@ def main():
         origin_model = import_module(f'model.{args.arch}').mobilenet_v1().to(device)
         origin_model.load_state_dict(ckpt['state_dict'])
     elif args.arch == 'mobilenet_v2':
-        origin_model = import_module(f'model.{args.arch}_flops').mobilenet_v2().to(device)
+        origin_model = import_module(f'model.{args.arch}').mobilenet_v2().to(device)
+        origin_model.load_state_dict(ckpt)
     elif args.arch == 'vgg_cifar':
         origin_model = import_module(f'model.{args.arch}').VGG(args.cfg).to(device)
         origin_model.load_state_dict(ckpt['state_dict'])

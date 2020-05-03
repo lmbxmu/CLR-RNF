@@ -93,7 +93,6 @@ python cal_graph_loss.py
 | ------------ | ------------------------------------------------------------ |
 | Mobilenet-v1 | https://hanlab.mit.edu/projects/amc/external/mobilenet_imagenet.pth.tar |
 | Mobilenet-v2 | https://drive.google.com/open?id=1jlto6HRVD3ipNkAl1lNhDbkBp7HylaqR |
-wd 4e-5 epoch 150 lr 0.1 
 
 
 ## Other Arguments
@@ -117,4 +116,5 @@ optional arguments:
   --pr_target           Target prune ratio of parameters 
   --lr_type             lr scheduler. default: step. optional:exp/cos/step/fixed
   --criterion           Loss function. default:Softmax. optional:SmoothSoftmax
+  --graph_method        Method to recontruct the graph of filters. default:knn other:kmeans/random
 ```

@@ -46,7 +46,7 @@ flops_cfg = {
     #'resnet50':[1.0, 1.67262, 0.3869, 1.26786, 0.3869, 1.26786, 0.77381, 2.02679, 0.38393, 1.25298, 0.38393, 1.25298, 0.38393, 1.25298, 0.76786, 2.01339, 0.38244, 1.24554, 0.38244, 1.24554, 0.38244, 1.24554, 0.38244, 1.24554, 0.38244, 1.24554, 0.76488, 2.0067, 0.3817, 1.24182, 0.3817, 1.24182]
 }
 flops_lambda = {
- 'resnet50':1,
+ 'resnet50':0.4,
   'mobilenet_v2':1
 }
 
@@ -80,6 +80,7 @@ def graph_resnet(pr_target):
 
     current_index = 0
     index = 0
+    #start_time = time.time()
     #Sort the weights and get the pruning threshold
     for name, module in origin_model.named_modules():
 
@@ -108,7 +109,8 @@ def graph_resnet(pr_target):
     #Based on the pruning threshold, the prune cfg of each layer is obtained
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
-    
+    #current_time = time.time()
+    #print("Find Structure Time {:.2f}s".format(current_time - start_time))
     #Get the preseverd filters after pruning by graph method based on pruning proportion
     for name, module in origin_model.named_modules():
 
@@ -302,6 +304,7 @@ def graph_mobilenet_v2(pr_target):
     c_index, i_index = 0, 0 
 
     f_index = 0
+    #start_time = time.time()
     # Sort the weights and get the pruning threshold
     for name, module in origin_model.named_modules():
 
@@ -342,6 +345,8 @@ def graph_mobilenet_v2(pr_target):
         for j in range(cat_cfg[i]):
             graph_cfg.append(pr_cfg[i+1])
     #print(graph_cfg)
+    #current_time = time.time()
+    #print("Find Structure Time {:.2f}s".format(current_time - start_time))
 
     # Get the preseverd filters after pruning by graph method based on pruning proportion
     for name, module in origin_model.named_modules():

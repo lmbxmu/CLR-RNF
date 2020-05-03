@@ -1,7 +1,7 @@
-2020-04-29-12:23:29
+2020-05-02-08:06:26
 
 gpus: [0]
-dataset: imagenet
+dataset: cifar10
 data_path: /data/cifar10/
 job_dir: ./experiment/imagenet/mobilenet_v2
 arch: mobilenet_v2
@@ -17,7 +17,7 @@ criterion: Softmax
 lr_decay_step: [50, 100]
 weight_decay: 0.005
 pretrain_model: /Users/zhangyuxin/Documents/MAC/pretrain_model/mobilenet_v2.pth.tar
-pr_target: 0.27
+pr_target: 0.25
 init_method: direct_project
 graph_gpu: False
 

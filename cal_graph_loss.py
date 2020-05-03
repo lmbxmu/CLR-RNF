@@ -39,8 +39,8 @@ def graph_vgg(pr_target):
             
             #s_matrix is the origin similarity matrix, m_..matrix is the NXM similarity matrix
             m_knn, s_matrix, _, _ = graph_weight(conv_weight, m, logger)
-            m_kmeans = kmeans_weight(conv_weight, m)
-            m_random = random_weight(conv_weight, m)
+            m_kmeans,_,_ = kmeans_weight(conv_weight, m)
+            m_random,_,_ = random_weight(conv_weight, m)
 
             loss_knn = getloss(m_knn, s_matrix)
             loss_kmeans = getloss(m_kmeans, s_matrix)
@@ -75,9 +75,9 @@ def graph_resnet(pr_target):
             m = int(conv_weight.size(0) * (1 - pr_target))#Number of channels to keep
 
             #s_matrix is the origin similarity matrix, m_..matrix is the NXM similarity matrix
-            m_knn, s_matrix = graph_weight(conv_weight, m, logger)
-            m_kmeans = kmeans_weight(conv_weight, m)
-            m_random = random_weight(conv_weight, m)
+            m_knn, s_matrix, _, _ = graph_weight(conv_weight, m, logger)
+            m_kmeans, _, _ = kmeans_weight(conv_weight, m)
+            m_random, _, _= random_weight(conv_weight, m)
 
             loss_knn = getloss(m_knn, s_matrix)
             loss_kmeans = getloss(m_kmeans, s_matrix)
@@ -112,9 +112,9 @@ def graph_resnet_imagenet(pr_target):
             m = int(conv1_weight.size(0) * (1 - pr_target))#Number of channels to keep
 
             #s_matrix is the origin similarity matrix, m_..matrix is the NXM similarity matrix
-            m_knn, s_matrix = graph_weight(conv1_weight, m, logger)
-            m_kmeans = kmeans_weight(conv1_weight, m)
-            m_random = random_weight(conv1_weight, m)
+            m_knn, s_matrix, _, _ = graph_weight(conv1_weight, m, logger)
+            m_kmeans, _, _ = kmeans_weight(conv1_weight, m)
+            m_random, _, _ = random_weight(conv1_weight, m)
 
             loss_knn = getloss(m_knn, s_matrix)
             loss_kmeans = getloss(m_kmeans, s_matrix)
@@ -135,9 +135,9 @@ def graph_resnet_imagenet(pr_target):
             m = int(conv1_weight.size(0) * (1 - pr_target))#Number of channels to keep
 
             #s_matrix is the origin similarity matrix, m_..matrix is the NXM similarity matrix
-            m_knn, s_matrix = graph_weight(conv1_weight, m, logger)
-            m_kmeans = kmeans_weight(conv1_weight, m)
-            m_random = random_weight(conv1_weight, m)
+            m_knn, s_matrix, _, _ = graph_weight(conv1_weight, m, logger)
+            m_kmeans, _, _ = kmeans_weight(conv1_weight, m)
+            m_random, _, _ = random_weight(conv1_weight, m)
 
             loss_knn = getloss(m_knn, s_matrix)
             loss_kmeans = getloss(m_kmeans, s_matrix)
@@ -155,9 +155,9 @@ def graph_resnet_imagenet(pr_target):
             m = int(conv2_weight.size(0) * (1 - pr_target))#Number of channels to keep
 
             #s_matrix is the origin similarity matrix, m_..matrix is the NXM similarity matrix
-            m_knn, s_matrix = graph_weight(conv2_weight, m, logger)
-            m_kmeans = kmeans_weight(conv2_weight, m)
-            m_random = random_weight(conv2_weight, m)
+            m_knn, s_matrix, _, _ = graph_weight(conv2_weight, m, logger)
+            m_kmeans, _, _ = kmeans_weight(conv2_weight, m)
+            m_random, _, _ = random_weight(conv2_weight, m)
 
             loss_knn = getloss(m_knn, s_matrix)
             loss_kmeans = getloss(m_kmeans, s_matrix)
@@ -191,9 +191,9 @@ def graph_googlenet(pr_target):
             m = int(branch3_weight.size(0) * (1 - pr_target))#Number of channels to keep
 
             #s_matrix is the origin similarity matrix, m_..matrix is the NXM similarity matrix
-            m_knn, s_matrix = graph_weight(branch3_weight, m, logger)
-            m_kmeans = kmeans_weight(branch3_weight, m)
-            m_random = random_weight(branch3_weight, m)
+            m_knn, s_matrix, _, _ = graph_weight(branch3_weight, m, logger)
+            m_kmeans, _, _ = kmeans_weight(branch3_weight, m)
+            m_random, _, _ = random_weight(branch3_weight, m)
 
             loss_knn = getloss(m_knn, s_matrix)
             loss_kmeans = getloss(m_kmeans, s_matrix)
@@ -210,9 +210,9 @@ def graph_googlenet(pr_target):
             m = int(branch5_weight1.size(0) * (1 - pr_target))#Number of channels to keep
 
             #s_matrix is the origin similarity matrix, m_..matrix is the NXM similarity matrix
-            m_knn, s_matrix = graph_weight(branch5_weight1, m, logger)
-            m_kmeans = kmeans_weight(branch5_weight1, m)
-            m_random = random_weight(branch5_weight1, m)
+            m_knn, s_matrix, _, _ = graph_weight(branch5_weight1, m, logger)
+            m_kmeans, _, _ = kmeans_weight(branch5_weight1, m)
+            m_random, _, _ = random_weight(branch5_weight1, m)
 
             loss_knn = getloss(m_knn, s_matrix)
             loss_kmeans = getloss(m_kmeans, s_matrix)
@@ -229,9 +229,9 @@ def graph_googlenet(pr_target):
             m = int(branch5_weight2.size(0) * (1 - pr_target))#Number of channels to keep
 
             #s_matrix is the origin similarity matrix, m_..matrix is the NXM similarity matrix
-            m_knn, s_matrix = graph_weight(branch5_weight2, m, logger)
-            m_kmeans = kmeans_weight(branch5_weight2, m)
-            m_random = random_weight(branch5_weight2, m)
+            m_knn, s_matrix, _, _ = graph_weight(branch5_weight2, m, logger)
+            m_kmeans, _, _ = kmeans_weight(branch5_weight2, m)
+            m_random, _, _ = random_weight(branch5_weight2, m)
 
             loss_knn = getloss(m_knn, s_matrix)
             loss_kmeans = getloss(m_kmeans, s_matrix)
