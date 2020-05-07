@@ -1,4 +1,5 @@
-
+cd GraphPruning
+conda activate pt1.0
 #debug
 ##vgg16
 python get_flops.py --arch vgg_cifar --cfg vgg16 --job_dir ./experiment/vgg_cifar --pretrain_model /Users/zhangyuxin/Documents/MAC/pretrain_model/vgg16_cifar10.pt --pr_target 0.8
@@ -51,21 +52,28 @@ python get_flops.py --arch resnet_imagenet --cfg resnet50 --pretrain_model /User
 #ablation study
 
 ##vgg
-python cifar.py --arch vgg_cifar --cfg vgg16 --data_path /home/lmb/ABCPrunerPlus/data/cifar --job_dir ./experiment/cifar/vgg_kmeans_1 --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/vgg16_cifar10.pt --lr 0.01 --lr_decay_step 50 100 --weight_decay 0.005  --num_epochs 150 --gpus 0 --pr_target 0.7 --graph_method kmeans --init_method random_project
-python cifar.py --arch vgg_cifar --cfg vgg16 --data_path /home/lmb/ABCPrunerPlus/data/cifar --job_dir ./experiment/cifar/vgg_random_1 --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/vgg16_cifar10.pt --lr 0.01 --lr_decay_step 50 100 --weight_decay 0.005  --num_epochs 150 --gpus 0 --pr_target 0.7 --graph_method random 
+python cifar.py --arch vgg_cifar --cfg vgg16 --data_path /home/lmb/ABCPrunerPlus/data/cifar --job_dir ./experiment/cifar/vgg_kmeans_2 --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/vgg16_cifar10.pt --lr 0.01 --lr_decay_step 50 100 --weight_decay 0.005  --num_epochs 150 --gpus 0 --pr_target 0.86 --graph_method kmeans --init_method random_project
+python cifar.py --arch vgg_cifar --cfg vgg16 --data_path /home/lmb/ABCPrunerPlus/data/cifar --job_dir ./experiment/cifar/vgg_abc --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/vgg16_cifar10.pt --lr 0.01 --lr_decay_step 50 100 --weight_decay 0.005  --num_epochs 150 --gpus 0 --pr_target 0.86 
 python get_flops.py --arch vgg_cifar --cfg vgg16 --job_dir ./experiment/flop/vgg --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/vgg16_cifar10.pt --graph_method kmeans --init_method random_project --pr_target 0.56 
 
 ##resnet56
 python get_flops.py --arch resnet_cifar --cfg resnet56 --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/resnet_56.pt --job_dir ./experiment/flop/res56 --pr_target 0.56 --graph_method kmeans --init_method random_project
-python cifar.py --data_path /home/lmb/ABCPrunerPlus/data/cifar --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/resnet_56.pt  --job_dir ./experiment/cifar/res56_random --arch resnet_cifar --cfg resnet56 --lr 0.01 --lr_decay_step 50 100 --weight_decay 0.005  --num_epochs 150 --gpus 0 1 3 --pr_target 0.55 --graph_method random
+python cifar.py --data_path /home/lmb/ABCPrunerPlus/data/cifar --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/resnet_56.pt  --job_dir ./experiment/cifar/res56_kmeans_2 --arch resnet_cifar --cfg resnet56 --lr 0.01 --lr_decay_step 50 100 --weight_decay 0.005  --num_epochs 150 --gpus 3 --pr_target 0.56 --graph_method kmeans --init_method random_project 
 
 ##resnet110
 python get_flops.py --arch resnet_cifar --cfg resnet110 --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/resnet_110.pt --job_dir ./experiment/flop/res110--pr_target 0.7 --graph_method kmeans --init_method random_project
-python cifar.py --data_path /home/lmb/ABCPrunerPlus/data/cifar --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/resnet_110.pt  --job_dir ./experiment/cifar/res110_random2 --arch resnet_cifar --cfg resnet110 --lr 0.01 --lr_decay_step 50 100 --weight_decay 0.005  --num_epochs 150 --gpus 0 1 --pr_target 0.67 --graph_method random
-
+python cifar.py --data_path /home/lmb/ABCPrunerPlus/data/cifar --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/resnet_110.pt  --job_dir ./experiment/cifar/res110_kmeans_2 --arch resnet_cifar --cfg resnet110 --lr 0.01 --lr_decay_step 50 100 --weight_decay 0.005  --num_epochs 150 --gpus 0 2 --pr_target 0.69 --graph_method kmeans --init_method random_project 
 ##googlenet
-python cifar.py --data_path /home/lmb/ABCPrunerPlus/data/cifar --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/googlenet.pt  --job_dir ./experiment/cifar/googlenet_kmeans --arch googlenet --cfg googlenet --lr 0.01 --lr_decay_step 50 100 --weight_decay 0.005  --num_epochs 150 --gpus 0 1 3 --pr_target 0.9 --graph_method kmeans --init_method random_project
-python get_flops.py --arch googlenet --cfg googlenet --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/googlenet.pt --job_dir ./experiment/flop/googlenet --pr_target 0.9 --graph_method kmeans --init_method random_project
+python cifar.py --data_path /home/lmb/ABCPrunerPlus/data/cifar --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/googlenet.pt  --job_dir ./experiment/cifar/googlenet_kmeans --arch googlenet --cfg googlenet --lr 0.01 --lr_decay_step 50 100 --weight_decay 0.005  --num_epochs 150 --gpus 0 2 3 --pr_target 0.91 --graph_method kmeans --init_method random_project
+python get_flops.py --arch googlenet --cfg googlenet --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/googlenet.pt --job_dir ./experiment/cifar/googlenet_kmeans 1 --pr_target 0.91 --graph_method kmeans --init_method random_project --gpus 0 2 3
+
+
+#ablation study 2
+python cifar.py --arch vgg_cifar --cfg vgg16 --data_path /home/lmb/ABCPrunerPlus/data/cifar --job_dir ./experiment/cifar/vgg_human --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/vgg16_cifar10.pt --lr 0.01 --lr_decay_step 50 100 --weight_decay 0.005  --num_epochs 150 --gpus 0 --pr_target 0.86
+python cifar.py --data_path /home/lmb/ABCPrunerPlus/data/cifar --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/resnet_56.pt  --job_dir ./experiment/cifar/res56_human --arch resnet_cifar --cfg resnet56 --lr 0.01 --lr_decay_step 50 100 --weight_decay 0.005  --num_epochs 150 --pr_target 0.56 --gpus 2 
+python cifar.py --data_path /home/lmb/ABCPrunerPlus/data/cifar --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/resnet_110.pt  --job_dir ./experiment/cifar/res110_human --arch resnet_cifar --cfg resnet110 --lr 0.01 --lr_decay_step 50 100 --weight_decay 0.005  --num_epochs 150 --gpus 1 3 --pr_target 0.69
+python cifar.py --data_path /home/lmb/ABCPrunerPlus/data/cifar --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/googlenet.pt  --job_dir ./experiment/cifar/googlenet_human --arch googlenet --cfg googlenet --lr 0.01 --lr_decay_step 50 100 --weight_decay 0.005  --num_epochs 150 --gpus 0 1 2 3 --pr_target 0.91
+
 
 #imagenet experiment
 

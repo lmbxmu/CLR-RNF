@@ -30,7 +30,7 @@ flops_cfg = {
     'resnet50':[2]*3+[1.5]*4+[1]*6+[0.5]*3,
     #'mobilenet_v2':[1.0, 2.91, 2.565, 1.54125, 1.095, 1.095, 0.75375, 1.0275, 1.0275, 1.0275, 1.2675, 2.26125, 2.26125, 1.55531, 1.54219, 1.54219, 2.29219]
     #'mobilenet_v2':[1.0, 2.7375, 1.24375, 0.95906, 1.93, 1.54656, 2.29219]
-    'mobilenet_v2':[1,3,1.5,0.5,2,1.5,1]
+    'mobilenet_v2':[1,3,1.5,0.5,2,1.5,1,0.5]
     #[1.0, 0.61915, 0.61915, 1.04788, 0.61247, 0.61247, 0.61247, 1.04065, 0.60913, 0.60913, 0.60913, 0.60913, 0.60913, 1.03703, 0.60746, 0.60746]
 }
 flops_lambda = {
@@ -38,7 +38,7 @@ flops_lambda = {
  'resnet56':10,
  'resnet110':5,
  'resnet50':0.4,
- 'mobilenet_v2':1
+ 'mobilenet_v2':1   
 }
 
 # Load pretrained model
@@ -100,6 +100,7 @@ def graph_vgg(pr_target):
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
     print(pr_cfg)
+    pr_cfg = [0.5]+[0.35]*6+[0.8]*4+[0.9]*2
     #current_time = time.time()
     #print("Find Structure Time {:.2f}s".format(current_time - start_time))
     '''
@@ -191,6 +192,10 @@ def graph_resnet(pr_target):
     #Based on the pruning threshold, the prune cfg of each layer is obtained
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
+    if args.cfg == 'resnet56':
+       pr_cfg = [0.1]+[0.55]*35+[0.0]*2+[0.6]*6+[0.4]*3+[0.1]+[0.4]+[0.1]+[0.4]+[0.1]+[0.4]+[0.1]+[0.4] #resnet56
+    else:
+        pr_cfg = [0.1]+[0.6]*36+[0.65]*36+[0.4]*36 #resnet110
     #print(len(pr_cfg),pr_cfg)
     #current_time = time.time()
     #print("Find Structure Time {:.2f}s".format(current_time - start_time))
@@ -281,6 +286,7 @@ def graph_googlenet(pr_target):
     #Based on the pruning threshold, the prune cfg of each layer is obtained
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
+    pr_cfg = [0.8]*15+[0.85]*3+[0.9]*9
     #current_time = time.time()
     #print("Find Structure Time {:.2f}s".format(current_time - start_time))
     #Get the preseverd filters after pruning by graph method based on pruning proportion
@@ -531,33 +537,16 @@ def graph_mobilenet_v1(pr_target):
 
 
 
-def graph_mobilenet_v2(pr_target):
 
-    hidden_cfg = []
+def graph_mobilenet_v2(pr_target):
+    pr_cfg = []
     weights = []
 
     cfg = []
-    all_cfg =[]
     centroids_state_dict = {}
     prune_state_dict = []
     current_index = 0
-
-    #start_time = time.time()
-    # Sort the weights and get the pruning threshold
-    for name, module in origin_model.named_modules():
-
-        if isinstance(module, InvertedResidual):
-            conv1_weight = module.conv[0].weight.data
-            if len(module.conv) == 5: #expand_ratio = 1
-                continue
-                #weights.append(conv1_weight.view(-1))
-                #weights.append(torch.div(conv1_weight.view(-1),math.pow(flops_cfg[args.cfg][f_index],flops_lambda[args.cfg])))
-            else:   
-                #conv2_weight = module.conv[3].weight.data       
-                #conv_weight = torch.cat((conv1_weight.view(-1),conv2_weight.view(-1)),0)
-                weights.append(conv1_weight.view(-1))  
-                 
-    cat_cfg = [2,3,4,3,3,1]
+    cat_cfg = [2,3,4,3,3,1,1]
     c_index, i_index = 0, 0 
 
     f_index = 0
@@ -582,8 +571,9 @@ def graph_mobilenet_v2(pr_target):
                     weights.append(conv_weight)  
                     c_index += 1
                     i_index = 0
-                    f_index += 1  
-    #weights.append(origin_model.state_dict()['features.18.0.weight'].view(-1))  #lastlayer          
+                    f_index += 1      
+
+    weights.append(torch.div(origin_model.state_dict()['features.18.0.weight'].view(-1),math.pow(flops_cfg[args.cfg][7],flops_lambda[args.cfg])))  #lastlayer          
 
     all_weights = torch.cat(weights, 0)
     preserve_num = int(all_weights.size(0) * (1 - pr_target))
@@ -591,22 +581,18 @@ def graph_mobilenet_v2(pr_target):
     threshold = preserve_weight[preserve_num - 1]
 
     # Based on the pruning threshold, the prune cfg of each layer is obtained
-    i = 0
-    for i, weight in enumerate(weights):
-        all_cfg.append(torch.sum(torch.lt(torch.abs(weight), threshold)).item() / weight.size(0))
-
-
-    hidden_cfg = all_cfg[:16]
+    for weight in weights:
+        pr_cfg.append(torch.sum(torch.lt(torch.abs(weight), threshold)).item() / weight.size(0))
+    print(pr_cfg)
     graph_cfg = []
-    graph_cfg.append(all_cfg[16])
-    for i in range(6):
+    graph_cfg.append(pr_cfg[0])
+    for i in range(len(cat_cfg)):
         for j in range(cat_cfg[i]):
-            graph_cfg.append(all_cfg[i+17])
-    print(hidden_cfg)
-    print(graph_cfg)
+            graph_cfg.append(pr_cfg[i+1])
+    #print(graph_cfg)
 
 
-    model = import_module(f'model.{args.arch}_flops').mobilenet_v2(layer_cfg=graph_cfg,hidden_cfg=hidden_cfg).to(device)
+    model = import_module(f'model.{args.arch}_flops').mobilenet_v2(layer_cfg=graph_cfg).to(device)
 
     return model
 

@@ -1,4 +1,4 @@
-2020-05-03-10:58:15
+2020-05-07-08:26:03
 
 gpus: [0]
 dataset: cifar10
@@ -17,7 +17,7 @@ criterion: Softmax
 lr_decay_step: [50, 100]
 weight_decay: 0.005
 pretrain_model: /Users/zhangyuxin/Documents/MAC/pretrain_model/googlenet.pt
-pr_target: 0.95
+pr_target: 0.8
 init_method: direct_project
 graph_method: knn
 graph_gpu: False

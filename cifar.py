@@ -81,6 +81,11 @@ def graph_vgg(pr_target):
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
     print(pr_cfg)
+
+    #ABCPruner 
+    #pr_cfg = [0.7, 0.6, 0.6, 0.8, 0.7, 0.4, 0.5, 0.4, 0.3, 0.2, 0.5, 0.1, 0.4]
+    #Human expert
+    pr_cfg = [0.5]+[0.35]*6+[0.8]*4+[0.9]*2
     #current_time = time.time()
     #print("Find Structure Time {:.2f}s".format(current_time - start_time))
     '''
@@ -196,31 +201,26 @@ def graph_resnet(pr_target):
     #Based on the pruning threshold, the prune cfg of each layer is obtained
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
+    '''
+    #ABCPruner 
+    if args.cfg == 'resnet56':
+        pr_cfg = [5, 7, 3, 6, 6, 6, 7, 6, 3, 6, 2, 7, 1, 2, 1, 5, 5, 5, 7, 4, 7, 6, 2, 4, 5, 3, 6]
+    else:
+        pr_cfg = [2, 4, 4, 3, 6, 5, 6, 1, 2, 6, 6, 4, 4, 5, 4, 3, 5, 2, 2, 2, 5, 2, 1, 3, 1, 4, 4, 3, 6, 6, 2, 6, 2, 3, 5, 5, 5, 5, 4, 4, 4, 2, 3, 4, 1, 6, 1, 2, 6, 1, 4, 2, 2, 3]
+    for i in range(len(pr_cfg)):
+        pr_cfg[i] /= 10
+    '''
+    if args.cfg == 'resnet56':
+       pr_cfg = [0.1]+[0.55]*35+[0.0]*2+[0.6]*6+[0.4]*3+[0.1]+[0.4]+[0.1]+[0.4]+[0.1]+[0.4]+[0.1]+[0.4] #resnet56
+    else:
+        pr_cfg = [0.1]+[0.6]*36+[0.65]*36+[0.4]*36 #resnet110
+    #Human expert
+    #pr_cfg = [0.1]+[0.60]*35+[0.0]*2+[0.6]*6+[0.4]*3+[0.1]+[0.4]+[0.1]+[0.4]+[0.1]+[0.4]+[0.1]+[0.4] #resnet56
+    #pr_cfg = [0.1]+[0.40]*36+[0.40]*36+[0.4]*36 #resnet110
     #print(len(pr_cfg),pr_cfg)
     #current_time = time.time()
     #print("Find Structure Time {:.2f}s".format(current_time - start_time))
-    '''
-    #Based on the pruning threshold, the prune cfg of each layer is obtained
-    q_cfg, p_cfg, pr_cfg = [], [], []
 
-    t1, t2 = 0, pr_target * all_weights.size(0)
-
-    #Based on the pruning threshold, the prune cfg of each layer is obtained
-    for i, weight in enumerate(weights):
-        p = torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0)
-        p_cfg.append(p)
-        q_cfg.append(p*math.exp(-p))
-
-    for i, weight in enumerate(weights):
-        q_cfg[i] /= sum(q_cfg)
-        t1 += q_cfg[i] * weight.size(0)
-
-    eta = t2/t1
-    print("eta {:.6f}".format(eta))
-    for i, q in enumerate(q_cfg):
-        pr_cfg.append(q * eta)
-        print("Layer[{}] p {:.6f} q {:.6f} pr_cfg {:.6f}".format(i, p_cfg[i], q_cfg[i], pr_cfg[i]))
-    '''
     
     #Get the preseverd filters after pruning by graph method based on pruning proportion
 
@@ -300,6 +300,16 @@ def graph_googlenet(pr_target):
     #Based on the pruning threshold, the prune cfg of each layer is obtained
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
+    '''
+    #ABCPruner 
+    print(len(pr_cfg))
+    pr_cfg = [3, 3, 3, 1, 1, 1, 2, 2, 2, 3, 3, 3, 2, 2, 2, 3, 3, 3, 1, 1, 1, 2, 2, 2, 3, 3, 3]
+    for i in range(len(pr_cfg)):
+        pr_cfg[i] /= 10
+    '''
+    pr_cfg = [0.8]*15+[0.85]*3+[0.9]*9
+    #Human expert
+    #pr_cfg = [0.10]+[0.8]*5+[0.85]+[0.8]*3
     #current_time = time.time()
     #print("Find Structure Time {:.2f}s".format(current_time - start_time))
     #Get the preseverd filters after pruning by graph method based on pruning proportion

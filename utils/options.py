@@ -138,7 +138,7 @@ parser.add_argument(
 parser.add_argument(
     '--graph_gpu',
     action='store_true',
-    help='run the graph algorithm with gpu or not. Default:False'
+    help='Run the graph algorithm with gpu or not. Default:False'
 )
 
 
