@@ -547,7 +547,7 @@ def adjust_learning_rate(optimizer, epoch, step, len_epoch):
         raise NotImplementedError
     if epoch < 5:
             lr = lr * float(1 + step + epoch * len_epoch) / (5. * len_epoch)
-    print('=> lr: {}'.format(lr))
+    #print('=> lr: {}'.format(lr))
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 
