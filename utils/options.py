@@ -36,7 +36,8 @@ parser.add_argument(
     '--arch',
     type=str,
     default='resnet',
-    help='Architecture of model. default:resnet')
+    help='Architecture of model. default:resnet'
+)
 
 parser.add_argument(
     '--cfg',
@@ -50,6 +51,13 @@ parser.add_argument(
     type=int,
     default=150,
     help='The num of epochs to train. default:150')
+
+parser.add_argument(
+    '--resume',
+    type=str,
+    default=None,
+    help='Continue training from last epoch, keep all traning configurations as before.'
+)
 
 parser.add_argument(
     '--train_batch_size',

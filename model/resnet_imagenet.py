@@ -59,7 +59,7 @@ class Bottleneck(nn.Module):
     expansion = 4
     __constants__ = ['downsample']
 
-    def __init__(self, inplanes, planes, conv1_planes=None, conv2_planes=None, stride=1, downsample=None, groups=1,
+    def __init__(self, inplanes, planes, outplanes = None, conv1_planes=None, conv2_planes=None, stride=1, downsample=None, groups=1,
                  base_width=64, dilation=1, norm_layer=None):
         super(Bottleneck, self).__init__()
         if norm_layer is None:
@@ -70,12 +70,14 @@ class Bottleneck(nn.Module):
             conv1_planes = width
         if conv2_planes is None:
             conv2_planes = width
+        if outplanes == None:
+            outplanes = planes * self.expansion
         self.conv1 = conv1x1(inplanes, conv1_planes)
         self.bn1 = norm_layer(conv1_planes)
         self.conv2 = conv3x3(conv1_planes, conv2_planes, stride, groups, dilation)
         self.bn2 = norm_layer(conv2_planes)
-        self.conv3 = conv1x1(conv2_planes, planes * self.expansion)
-        self.bn3 = norm_layer(planes * self.expansion)
+        self.conv3 = conv1x1(conv2_planes, outplanes)
+        self.bn3 = norm_layer(outplanes)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
         self.stride = stride
@@ -105,17 +107,23 @@ class Bottleneck(nn.Module):
 
 class ResNet(nn.Module):
 
-    def __init__(self, block, layers, layer_cfg=None, num_classes=1000, zero_init_residual=False,
+    def __init__(self, block, layers, cfg = None, num_classes=1000, zero_init_residual=False,
                  groups=1, width_per_group=64, replace_stride_with_dilation=None,
                  norm_layer=None):
         super(ResNet, self).__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         self._norm_layer = norm_layer
-        self.layer_cfg = layer_cfg
         self.cfg_index = 0
 
-        self.inplanes = 64
+        if cfg == None:
+            block_cfg = [0] * 4
+            self.layer_cfg = None
+        else:
+            block_cfg = cfg[-4:]
+            self.layer_cfg = cfg[:-4]
+
+        self.inplanes = int(64 * (1 - block_cfg[0]))
         self.dilation = 1
         if replace_stride_with_dilation is None:
             # each element in the tuple indicates if we should replace
@@ -131,15 +139,15 @@ class ResNet(nn.Module):
         self.bn1 = norm_layer(self.inplanes)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
-        self.layer1 = self._make_layer(block, 64, layers[0])
-        self.layer2 = self._make_layer(block, 128, layers[1], stride=2,
+        self.layer1 = self._make_layer(block, int(64 * (1 - block_cfg[0])), int(256  * (1 - block_cfg[0])), layers[0])
+        self.layer2 = self._make_layer(block, int(128 * (1 - block_cfg[1])), int(512 * (1 - block_cfg[1])), layers[1], stride=2,
                                        dilate=replace_stride_with_dilation[0])
-        self.layer3 = self._make_layer(block, 256, layers[2], stride=2,
+        self.layer3 = self._make_layer(block, int(256 * (1 - block_cfg[2])), int(1024 * (1 - block_cfg[2])), layers[2], stride=2,
                                        dilate=replace_stride_with_dilation[1])
-        self.layer4 = self._make_layer(block, 512, layers[3], stride=2,
+        self.layer4 = self._make_layer(block, int(512 * (1 - block_cfg[3])), int(2048 * (1 - block_cfg[3])), layers[3], stride=2,
                                        dilate=replace_stride_with_dilation[2])
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc = nn.Linear(512 * block.expansion, num_classes)
+        self.fc = nn.Linear(int(512 * block.expansion * (1 - block_cfg[3])), num_classes)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -158,29 +166,31 @@ class ResNet(nn.Module):
                 elif isinstance(m, BasicBlock):
                     nn.init.constant_(m.bn2.weight, 0)
 
-    def _make_layer(self, block, planes, blocks, stride=1, dilate=False):
+    def _make_layer(self, block, planes, outplanes, blocks, stride=1, dilate=False):
         norm_layer = self._norm_layer
         downsample = None
         previous_dilation = self.dilation
+        if outplanes == None:
+            outplanes = inplanes * block.expansion
         if dilate:
             self.dilation *= stride
             stride = 1
-        if stride != 1 or self.inplanes != planes * block.expansion:
+        if stride != 1 or self.inplanes != outplanes:
             downsample = nn.Sequential(
-                conv1x1(self.inplanes, planes * block.expansion, stride),
-                norm_layer(planes * block.expansion),
+                conv1x1(self.inplanes, outplanes, stride),
+                norm_layer(outplanes),
             )
 
         layers = []
-        layers.append(block(self.inplanes, planes,
+        layers.append(block(self.inplanes, planes, outplanes,
                             conv1_planes=None if self.layer_cfg is None else self.layer_cfg[self.cfg_index],
                             conv2_planes=None if self.layer_cfg is None else self.layer_cfg[self.cfg_index + 1],
                             stride=stride, downsample=downsample, groups=self.groups,
                             base_width=self.base_width, dilation=previous_dilation, norm_layer=norm_layer))
         self.cfg_index += 2
-        self.inplanes = planes * block.expansion
+        self.inplanes = outplanes
         for _ in range(1, blocks):
-            layers.append(block(self.inplanes, planes,
+            layers.append(block(self.inplanes, planes, outplanes,
                                 conv1_planes=None if self.layer_cfg is None else self.layer_cfg[self.cfg_index],
                                 conv2_planes=None if self.layer_cfg is None else self.layer_cfg[self.cfg_index + 1],
                                 groups=self.groups,
@@ -210,17 +220,17 @@ class ResNet(nn.Module):
     def forward(self, x):
         return self._forward_impl(x)
 
-def resnet(cfg, layer_cfg=None, num_classes=1000):
+def resnet(cfg = None, layer_cfg=None, num_classes=1000):
     if cfg == 'resnet18':
-        return ResNet(BasicBlock, [2, 2, 2, 2], layer_cfg=layer_cfg, num_classes=num_classes)
+        return ResNet(BasicBlock, [2, 2, 2, 2], cfg = layer_cfg, num_classes=num_classes)
     elif cfg == 'resnet34':
-        return ResNet(BasicBlock, [3, 4, 6, 3], layer_cfg=layer_cfg, num_classes=num_classes)
+        return ResNet(BasicBlock, [3, 4, 6, 3], cfg = layer_cfg, num_classes=num_classes)
     elif cfg == 'resnet50':
-        return ResNet(Bottleneck, [3, 4, 6, 3], layer_cfg=layer_cfg, num_classes=num_classes)
+        return ResNet(Bottleneck, [3, 4, 6, 3], cfg = layer_cfg, num_classes=num_classes)
     elif cfg == 'resnet101':
-        return ResNet(Bottleneck, [3, 4, 23, 3], layer_cfg=layer_cfg, num_classes=num_classes)
+        return ResNet(Bottleneck, [3, 4, 23, 3], cfg = layer_cfg, num_classes=num_classes)
     elif cfg == 'resnet152':
-        return ResNet(Bottleneck, [3, 8, 36, 3], layer_cfg=layer_cfg, num_classes=num_classes)
+        return ResNet(Bottleneck, [3, 8, 36, 3], cfg = layer_cfg, num_classes=num_classes)
 
 def ResNet18():
     return ResNet(BasicBlock, [2,2,2,2])
@@ -236,3 +246,12 @@ def ResNet101():
 
 def ResNet152():
     return ResNet(Bottleneck, [3,8,36,3])
+
+'''
+if __name__ == "__main__":
+    model = resnet(cfg='resnet50',layer_cfg=None)
+    for name, module in model.named_modules():
+        for param_tensor in module.state_dict():
+            print(param_tensor,'\t',module.state_dict()[param_tensor].size())
+'''
+  

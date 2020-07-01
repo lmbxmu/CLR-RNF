@@ -88,7 +88,6 @@ class MobileNetV2(nn.Module):
             [6, 320, 1, 1],
         ]
         
-
         # building first layer
         assert input_size % 32 == 0
         input_channel = int(input_channel * width_mult)
@@ -132,16 +131,16 @@ class MobileNetV2(nn.Module):
         
         if layer_cfg == None:
             self.classifier = nn.Sequential(
-            nn.Dropout(0.2),
+            nn.Dropout(0),
             nn.Linear(self.last_channel, n_class),
             )
         else:
             self.classifier = nn.Sequential(
-                nn.Dropout(0.2),
+                nn.Dropout(0),
                 nn.Linear(int(self.last_channel*(1-layer_cfg[layer_index])), n_class),
             )
         
-
+    
         self._initialize_weights()
 
     def forward(self, x):
@@ -164,19 +163,22 @@ class MobileNetV2(nn.Module):
                 n = m.weight.size(1)
                 m.weight.data.normal_(0, 0.01)
                 m.bias.data.zero_()
+                
 def mobilenet_v2(layer_cfg=None):
     return MobileNetV2(layer_cfg=layer_cfg)
 
+'''
 if __name__ == "__main__":
     model = MobileNetV2(layer_cfg=[0]*18)
 
-    '''
+
     for name, module in model.named_modules():
         if isinstance(module, nn.Conv2d):
             for param_tensor in module.state_dict():
                 print(param_tensor,'\t',module.state_dict()[param_tensor].size())
-    '''
+
     ckpt = torch.load('/Users/zhangyuxin/Documents/MAC/pretrain_model/mobilenet_v2.pth.tar',map_location='cpu')
     for param_tensor in model.state_dict():
         print(param_tensor, '\t', model.state_dict()[param_tensor].size())
     model.load_state_dict(ckpt)
+'''

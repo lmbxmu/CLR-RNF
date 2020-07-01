@@ -149,40 +149,27 @@ def graph_resnet(pr_target):
     conv1_weight = origin_model.state_dict()['conv1.weight']
     _, _, lastcentroids, lastindice = graph_weight(conv1_weight, int(conv1_weight.size(0) * (1 - block_cfg[stage])),logger)
     centroids_state_dict['conv1.weight'] = lastcentroids
-
-    centroids_state_dict['bn1.weight'] = origin_model.state_dict()['bn1.weight'][list(lastindice)].cpu()
-    centroids_state_dict['bn1.bias'] = origin_model.state_dict()['bn1.bias'][list(lastindice)].cpu()
-    centroids_state_dict['bn1.running_var'] = origin_model.state_dict()['bn1.bias'][list(lastindice)].cpu()
-    centroids_state_dict['bn1.running_mean'] = origin_model.state_dict()['bn1.bias'][list(lastindice)].cpu()
-    '''
+    prune_state_dict.append('bn1.weight')
     prune_state_dict.append('bn1.bias')
     prune_state_dict.append('bn1.running_var')
     prune_state_dict.append('bn1.running_mean')
-    '''
     last_downsample_indice = lastindice
     last_downsample_indice_1 = None
     for name, module in origin_model.named_modules():
         #print(name)
         if name.endswith('downsample'):
             downsample_weight = origin_model.state_dict()[name+'.0.weight']
-            _, centroids, indice = random_weight(downsample_weight, len(lastindice),logger)
-            #_, _, centroids, indice = graph_weight(downsample_weight, len(lastindice),logger)
+            #_, centroids, indice = random_weight(downsample_weight, len(lastindice),logger)
+            _, _, centroids, indice = graph_weight(downsample_weight, len(lastindice),logger)
             centroids_state_dict[name + '.0.weight'] = centroids.reshape((-1, downsample_weight.size(1), downsample_weight.size(2), downsample_weight.size(3)))
             if args.init_method == 'random_project':
                 centroids_state_dict[name + '.0.weight'] = random_project(torch.FloatTensor(centroids_state_dict[name + '.0.weight']), len(last_downsample_indice))
             else:
                 centroids_state_dict[name + '.0.weight'] = direct_project(torch.FloatTensor(centroids_state_dict[name + '.0.weight']), last_downsample_indice)
-           
-            centroids_state_dict[name + '.1.weight'] = origin_model.state_dict()[name + '.1.weight'][list(indice)].cpu()
-            centroids_state_dict[name + '.1.bias'] = origin_model.state_dict()[name + '.1.bias'][list(indice)].cpu()
-            centroids_state_dict[name + '.1.running_var'] = origin_model.state_dict()[name + '.1.running_var'][list(indice)].cpu()
-            centroids_state_dict[name + '.1.running_mean'] = origin_model.state_dict()[name + '.1.running_mean'][list(indice)].cpu()
-            '''
             prune_state_dict.append(name + '.1.weight')
             prune_state_dict.append(name + '.1.bias')
             prune_state_dict.append(name + '.1.running_var')
             prune_state_dict.append(name + '.1.running_mean')
-            '''
             last_downsample_indice = last_downsample_indice_1
 
         if isinstance(module, BasicBlock):
@@ -207,7 +194,6 @@ def graph_resnet(pr_target):
         elif isinstance(module, Bottleneck):
 
             conv1_weight = module.conv1.weight.data
-            #_, centroids, indice = random_weight(conv1_weight, int(conv1_weight.size(0) * (1 - pr_cfg[current_index])),logger)
             _, _, centroids, indice = graph_weight(conv1_weight, int(conv1_weight.size(0) * (1 - pr_cfg[current_index])),logger)
             cfg.append(len(centroids))
             indices.append(indice)
@@ -218,22 +204,13 @@ def graph_resnet(pr_target):
             else:
                 centroids_state_dict[name + '.conv1.weight'] = direct_project(torch.FloatTensor(centroids_state_dict[name + '.conv1.weight']), lastindice)
 
-            centroids_state_dict[name + '.bn1.weight'] = origin_model.state_dict()[name + '.bn1.weight'][list(indice)].cpu()
-            centroids_state_dict[name + '.bn1.bias'] = origin_model.state_dict()[name + '.bn1.bias'][list(indice)].cpu()
-            centroids_state_dict[name + '.bn1.running_var'] = origin_model.state_dict()[name + '.bn1.running_var'][list(indice)].cpu()
-            centroids_state_dict[name + '.bn1.running_mean'] = origin_model.state_dict()[name + '.bn1.running_mean'][list(indice)].cpu()
-
-            '''
             prune_state_dict.append(name + '.bn1.weight')
             prune_state_dict.append(name + '.bn1.bias')
             prune_state_dict.append(name + '.bn1.running_var')
             prune_state_dict.append(name + '.bn1.running_mean')
-            '''
-
             current_index += 1
 
             conv2_weight = module.conv2.weight.data
-            #_, centroids, indice = random_weight(conv2_weight, int(conv2_weight.size(0) * (1 - pr_cfg[current_index])),logger)
             _, _, centroids, indice = graph_weight(conv2_weight, int(conv2_weight.size(0) * (1 - pr_cfg[current_index])),logger)
             cfg.append(len(centroids))
             centroids_state_dict[name + '.conv2.weight'] = centroids.reshape((-1, conv2_weight.size(1), conv2_weight.size(2), conv2_weight.size(3)))
@@ -243,36 +220,22 @@ def graph_resnet(pr_target):
             else:
                 centroids_state_dict[name + '.conv3.weight'] = direct_project(module.conv3.weight.data, indice)
 
-            centroids_state_dict[name + '.bn2.weight'] = origin_model.state_dict()[name + '.bn2.weight'][list(indice)].cpu()
-            centroids_state_dict[name + '.bn2.bias'] = origin_model.state_dict()[name + '.bn2.bias'][list(indice)].cpu()
-            centroids_state_dict[name + '.bn2.running_var'] = origin_model.state_dict()[name + '.bn2.running_var'][list(indice)].cpu()
-            centroids_state_dict[name + '.bn2.running_mean'] = origin_model.state_dict()[name + '.bn2.running_mean'][list(indice)].cpu()
-
-            '''
             prune_state_dict.append(name + '.bn2.weight')
             prune_state_dict.append(name + '.bn2.bias')
             prune_state_dict.append(name + '.bn2.running_var')
             prune_state_dict.append(name + '.bn2.running_mean')
-            '''
             current_index+=1
 
             conv3_weight = centroids_state_dict[name + '.conv3.weight']
-            #_, centroids, indice = random_weight(conv3_weight, int(conv3_weight.size(0) * (1 - block_cfg[stage])),logger)
-            _, _, centroids, indice = graph_weight(conv3_weight, int(conv3_weight.size(0) * (1 - block_cfg[stage])),logger)
+            _, centroids, indice = random_weight(conv3_weight, int(conv3_weight.size(0) * (1 - block_cfg[stage])),logger)
+            #_, _, centroids, indice = graph_weight(conv3_weight, int(conv3_weight.size(0) * (1 - block_cfg[stage])),logger)
             centroids_state_dict[name + '.conv3.weight'] = centroids.reshape((-1, conv3_weight.size(1), conv3_weight.size(2), conv3_weight.size(3)))
             
             lastindice = indice
-            centroids_state_dict[name + '.bn3.weight'] = origin_model.state_dict()[name + '.bn3.weight'][list(indice)].cpu()
-            centroids_state_dict[name + '.bn3.bias'] = origin_model.state_dict()[name + '.bn3.bias'][list(indice)].cpu()
-            centroids_state_dict[name + '.bn3.running_var'] = origin_model.state_dict()[name + '.bn3.running_var'][list(indice)].cpu()
-            centroids_state_dict[name + '.bn3.running_mean'] = origin_model.state_dict()[name + '.bn3.running_mean'][list(indice)].cpu()
-
-            '''
             prune_state_dict.append(name + '.bn3.weight')
             prune_state_dict.append(name + '.bn3.bias')
             prune_state_dict.append(name + '.bn3.running_var')
             prune_state_dict.append(name + '.bn3.running_mean')
-            '''
 
             last_downsample_indice_1 = indice
 
@@ -280,22 +243,11 @@ def graph_resnet(pr_target):
             if block_index == blocks_num[stage]:
                 block_index = 0
                 stage += 1
-    
-    fc_weight = origin_model.state_dict()['fc.weight'].cpu()
-    
-    pr_fc_weight = torch.randn(fc_weight.size(0),len(lastindice))
-    for i, ind in enumerate(indice):
-        pr_fc_weight[:,i] = fc_weight[:,ind]
 
-    centroids_state_dict['fc.weight'] = pr_fc_weight.cpu()
-
-    
-    '''
     prune_state_dict.append('fc.weight')
     prune_state_dict.append('fc.bias')
-    '''
+
     cfg.extend(block_cfg)
-    print(cfg)
     model = import_module(f'model.{args.arch}').resnet(args.cfg, layer_cfg=cfg).to(device)
     if args.init_method == 'random_project' or args.init_method == 'direct_project':
         pretrain_state_dict = origin_model.state_dict()
@@ -318,7 +270,7 @@ def graph_resnet(pr_target):
             if k in prune_state_dict:
                 continue
             elif k in centroids_state_dict_keys:
-                print(k)
+                #print(k)
                 state_dict[k] = torch.FloatTensor(centroids_state_dict[k]).view_as(state_dict[k])
             else:
                 state_dict[k] = pretrain_state_dict[k]
@@ -494,17 +446,10 @@ def graph_mobilenet_v2(pr_target):
                 centroids_state_dict[name + '.conv.3.weight'] = centroids
                 lastindice = indice
 
-                centroids_state_dict[name + '.conv.4.weight'] = origin_model.state_dict()[name + '.conv.4.weight'][list(indice)].cpu()
-                centroids_state_dict[name + '.conv.4.bias'] = origin_model.state_dict()[name + '.conv.4.bias'][list(indice)].cpu()
-                centroids_state_dict[name + '.conv.4.running_var'] = origin_model.state_dict()[name + '.conv.4.running_var'][list(indice)].cpu()
-                centroids_state_dict[name + '.conv.4.running_mean'] = origin_model.state_dict()[name + '.conv.4.running_mean'][list(indice)].cpu()
-
-                '''
                 prune_state_dict.append(name + '.conv.4.weight')
                 prune_state_dict.append(name + '.conv.4.bias')
                 prune_state_dict.append(name + '.conv.4.running_var')
                 prune_state_dict.append(name + '.conv.4.running_mean')
-                '''
                 current_index += 1
 
             else:
@@ -514,49 +459,28 @@ def graph_mobilenet_v2(pr_target):
                                                        int(conv1_weight.size(0) * (1 - graph_cfg[current_index-1])), logger)
 
                 centroids_state_dict[name + '.conv.0.weight'] = centroids.reshape((-1, conv1_weight.size(1), conv1_weight.size(2), conv1_weight.size(3)))
-                
-                centroids_state_dict[name + '.conv.1.weight'] = origin_model.state_dict()[name + '.conv.1.weight'][list(indice1)].cpu()
-                centroids_state_dict[name + '.conv.1.bias'] = origin_model.state_dict()[name + '.conv.1.bias'][list(indice1)].cpu()
-                centroids_state_dict[name + '.conv.1.running_var'] = origin_model.state_dict()[name + '.conv.1.running_var'][list(indice1)].cpu()
-                centroids_state_dict[name + '.conv.1.running_mean'] = origin_model.state_dict()[name + '.conv.1.running_mean'][list(indice1)].cpu()
-                '''
                 prune_state_dict.append(name + '.conv.1.weight')
                 prune_state_dict.append(name + '.conv.1.bias')
                 prune_state_dict.append(name + '.conv.1.running_var')
                 prune_state_dict.append(name + '.conv.1.running_mean')
-                '''
 
                 conv2_weight = module.conv[3].weight.data
                 _, _, centroids, indice2 = graph_weight(conv2_weight,
                                                        int(conv2_weight.size(0) * (1 - graph_cfg[current_index-1])), logger)
                 centroids_state_dict[name + '.conv.3.weight'] = centroids
-
-                centroids_state_dict[name + '.conv.4.weight'] = origin_model.state_dict()[name + '.conv.4.weight'][list(indice2)].cpu()
-                centroids_state_dict[name + '.conv.4.bias'] = origin_model.state_dict()[name + '.conv.4.bias'][list(indice2)].cpu()
-                centroids_state_dict[name + '.conv.4.running_var'] = origin_model.state_dict()[name + '.conv.4.running_var'][list(indice2)].cpu()
-                centroids_state_dict[name + '.conv.4.running_mean'] = origin_model.state_dict()[name + '.conv.4.running_mean'][list(indice2)].cpu()
-                '''
                 prune_state_dict.append(name + '.conv.4.weight')
                 prune_state_dict.append(name + '.conv.4.bias')
                 prune_state_dict.append(name + '.conv.4.running_mean')
                 prune_state_dict.append(name + '.conv.4.running_var')
-                '''
 
                 conv3_weight = module.conv[6].weight.data
                 _, _, centroids, indice3 = graph_weight(conv3_weight,
                                                        int(conv3_weight.size(0) * (1 - graph_cfg[current_index])), logger)
                 centroids_state_dict[name + '.conv.6.weight'] = centroids.reshape((-1, conv3_weight.size(1), conv3_weight.size(2), conv3_weight.size(3)))
-                
-                centroids_state_dict[name + '.conv.7.weight'] = origin_model.state_dict()[name + '.conv.7.weight'][list(indice3)].cpu()
-                centroids_state_dict[name + '.conv.7.bias'] = origin_model.state_dict()[name + '.conv.7.bias'][list(indice3)].cpu()
-                centroids_state_dict[name + '.conv.7.running_var'] = origin_model.state_dict()[name + '.conv.7.running_var'][list(indice3)].cpu()
-                centroids_state_dict[name + '.conv.7.running_mean'] = origin_model.state_dict()[name + '.conv.7.running_mean'][list(indice3)].cpu()
-                '''
                 prune_state_dict.append(name + '.conv.7.weight')
                 prune_state_dict.append(name + '.conv.7.bias')
                 prune_state_dict.append(name + '.conv.7.running_mean')
                 prune_state_dict.append(name + '.conv.7.running_var')
-                '''
 
                 if args.init_method == 'random_project':
                     centroids_state_dict[name + '.conv.0.weight'] = random_project(centroids_state_dict[name + '.conv.0.weight'], len(lastindice))
@@ -572,25 +496,13 @@ def graph_mobilenet_v2(pr_target):
     conv_weight = origin_model.state_dict()['features.18.0.weight']
     _, _, centroids, indice = graph_weight(conv_weight, int(conv_weight.size(0) * (1 - graph_cfg[current_index])),logger)
     centroids_state_dict['features.18.0.weight'] = centroids.reshape((-1, conv_weight.size(1), conv_weight.size(2), conv_weight.size(3)))
-    centroids_state_dict['features.18.1.weight'] = origin_model.state_dict()['features.18.1.weight'][list(indice)].cpu()
-    centroids_state_dict['features.18.1.bias'] = origin_model.state_dict()['features.18.1.bias'][list(indice)].cpu()
-    centroids_state_dict['features.18.1.running_var'] = origin_model.state_dict()['features.18.1.running_var'][list(indice)].cpu()
-    centroids_state_dict['features.18.1.running_mean'] = origin_model.state_dict()['features.18.1.running_mean'][list(indice)].cpu()
-    '''
     prune_state_dict.append('features.18.1.weight')
     prune_state_dict.append('features.18.1.bias')
     prune_state_dict.append('features.18.1.running_var')
     prune_state_dict.append('features.18.1.running_mean')
-    '''
-    fc_weight = origin_model.state_dict()['classifier.1.weight'].cpu()
-    pr_fc_weight = torch.randn(fc_weight.size(0),len(indice))
-    for i, ind in enumerate(indice):
-        pr_fc_weight[:,i] = fc_weight[:,ind]
-    centroids_state_dict['classifier.1.weight'] =  pr_fc_weight.cpu()
-    '''
     prune_state_dict.append('classifier.1.weight')
     prune_state_dict.append('classifier.1.bias')
-    '''
+    
 
     if args.init_method == 'random_project':
         centroids_state_dict['features.18.0.weight'] = random_project(centroids_state_dict['features.18.0.weight'], len(lastindice))

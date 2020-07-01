@@ -88,6 +88,29 @@ python cal_graph_loss.py
 --graph_gpu
 ```
 
+
+You can run the following code to test our model:
+
+```shell
+python test.py
+--arch resnet_imagenet 
+--cfg resnet50 
+--data_path /media/disk2/zyc/ImageNet2012 
+--resume ./pretrain/checkpoints/model_best.pt 
+--pretrain_model /media/disk2/zyc/prune_result/resnet_50/pruned_checkpoint/resnet50-19c8e357.pth 
+--pr_target 0.44 
+--job_dir ./experiment/imagenet/test 
+--eval_batch_size 256
+```
+## ImageNet
+
+| Full Model | Params         | Flops            | Acc Top1 | Acc Top5 | Pruned Model                                                 |
+| ---------- | -------------- | ---------------- | -------- | -------- | ------------------------------------------------------------ |
+| ResNet50   | 6.90M(72.98%) | 931.02M(77.37%) | 71.112% | 90.424% | [<font size=2>Res50-0.2</font>](https://drive.google.com/file/d/1L0l0se0pPCJ_kpU5k6EIMusE3N87A3-n/view?usp=sharing) |
+| ResNet50   | 9.00M(64.77%) | 1227.23M(70.17%) | 72.656% | 91.085% | [<font size=2>Res50-0.44</font>](https://drive.google.com/file/d/1rIqmqJP3o1kKZ4jaE4x6dGnDtqFBS7Dn/view?usp=sharing) |
+| ResNet50   | 16.92M(33.80%) | 2445.83 M((40.54%) | 74.851% | 92.305% | [<font size=2>Res50-0.52</font>](https://drive.google.com/file/d/1O1jnlxxq3QqCe_8QRpSEZsJtqU6NfefU/view?usp=sharing) |
+</font>
+
 ## Pretrained model
 | Model        | Download Link                                                |
 | ------------ | ------------------------------------------------------------ |
@@ -117,4 +140,5 @@ optional arguments:
   --lr_type             lr scheduler. default: step. optional:exp/cos/step/fixed
   --criterion           Loss function. default:Softmax. optional:SmoothSoftmax
   --graph_method        Method to recontruct the graph of filters. default:knn other:kmeans/random
+  --resume              Continue training from specific checkpoint. For example:./experiment/imagenet/resnet50_redidual/checkpoint/model_last.pt
 ```

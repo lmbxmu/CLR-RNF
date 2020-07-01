@@ -1,4 +1,4 @@
-2020-05-03-15:32:31
+2020-06-18-10:57:54
 
 gpus: [0]
 dataset: imagenet
@@ -16,8 +16,8 @@ label_smooth: 0.1
 criterion: Softmax
 lr_decay_step: [50, 100]
 weight_decay: 0.005
-pretrain_model: /Users/zhangyuxin/Documents/MAC/pretrain_model/mobilenet_v2.pth.tar
-pr_target: 0.55
+pretrain_model: /Users/zhangyuxin/Documents/MAC/pretrain_model/mobilenetv2_1.0-f2a8633.pth.tar
+pr_target: 0.48
 init_method: direct_project
 graph_method: knn
 graph_gpu: False

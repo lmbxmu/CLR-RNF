@@ -38,9 +38,8 @@ flops_lambda = {
  'resnet56':10,
  'resnet110':5,
  'resnet50':0.4,
- 'mobilenet_v2':1   
+ 'mobilenet_v2':2  
 }
-
 # Load pretrained model
 print('==> Loading pretrained model..')
 if args.pretrain_model is None or not os.path.exists(args.pretrain_model):
@@ -55,6 +54,9 @@ elif args.arch == 'mobilenet_v1':
 elif args.arch == 'mobilenet_v2':
     origin_model = import_module(f'model.{args.arch}').mobilenet_v2().to(device)
     origin_model.load_state_dict(ckpt)
+elif args.arch == 'mobilenetv2_cifar':
+    origin_model = import_module(f'model.{args.arch}').mobilenet_v2().to(device)
+    origin_model.load_state_dict(ckpt['state_dict'])
 elif args.arch == 'vgg_cifar':
     origin_model = import_module(f'model.{args.arch}').VGG(args.cfg).to(device)
     origin_model.load_state_dict(ckpt['state_dict'])
@@ -161,7 +163,6 @@ def graph_vgg(pr_target):
     model = import_module(f'model.{args.arch}').VGG(args.cfg, layer_cfg=cfg).to(device)
     return model
 
-
 def graph_resnet(pr_target):
 
     
@@ -184,6 +185,33 @@ def graph_resnet(pr_target):
             weights.append(conv_weight.view(-1))
             index += 1
 
+    block_cfg = []
+    blocks_num = [9, 9, 9]
+
+    #for each stage, give the same prune rate for all blocks' output
+    tmp_weight = []
+    block_weights = []
+    stage = 0
+    block_index = 0
+    index = 0
+    for name, module in origin_model.named_modules():
+
+        if isinstance(module, ResBasicBlock):
+
+            conv_weight = torch.div(module.conv2.weight.data,math.pow(flops_cfg[args.cfg][index],flops_lambda[args.cfg]))
+            #conv1_weight = module.conv1.weight.data
+            if block_index == 0:
+                tmp_weight = conv_weight.view(-1)
+            else:
+                tmp_weight = torch.cat((tmp_weight, conv_weight.view(-1)),0)
+            block_index += 1
+            if block_index == blocks_num[stage]:
+                block_weights.append(tmp_weight)
+                block_index = 0
+                stage += 1
+            index += 1
+    weights.extend(block_weights)
+
     all_weights = torch.cat(weights,0)
     preserve_num = int(all_weights.size(0) * (1-pr_target))
     preserve_weight, _ = torch.topk(torch.abs(all_weights), preserve_num)
@@ -192,16 +220,10 @@ def graph_resnet(pr_target):
     #Based on the pruning threshold, the prune cfg of each layer is obtained
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
-    '''
-    if args.cfg == 'resnet56':
-       pr_cfg = [0.1]+[0.55]*35+[0.0]*2+[0.6]*6+[0.4]*3+[0.1]+[0.4]+[0.1]+[0.4]+[0.1]+[0.4]+[0.1]+[0.4] #resnet56
-    else:
-        pr_cfg = [0.1]+[0.6]*36+[0.65]*36+[0.4]*36 #resnet110
-    #print(len(pr_cfg),pr_cfg)
-    #current_time = time.time()
-    #print("Find Structure Time {:.2f}s".format(current_time - start_time))
 
-    '''
+    for weight in block_weights:
+        block_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
+
     
     #Get the preseverd filters after pruning by graph method based on pruning proportion
 
@@ -209,31 +231,22 @@ def graph_resnet(pr_target):
 
         if isinstance(module, ResBasicBlock):
 
+            #first conv layer
             conv1_weight = module.conv1.weight.data
-
             if args.graph_method == 'knn':
                 _, _, centroids, indice = graph_weight(conv1_weight, int(conv1_weight.size(0) * (1 - pr_cfg[current_block])),logger)
             elif args.graph_method == 'kmeans':
                 _, centroids, indice = kmeans_weight(conv1_weight, int(conv1_weight.size(0) * (1 - pr_cfg[current_block])),logger)
             elif args.graph_method == 'random':
-                _, centroids, indice = graph_weight(conv1_weight, int(conv1_weight.size(0) * (1 - pr_cfg[current_block])),logger)
+                _, centroids, indice = random_weight(conv1_weight, int(conv1_weight.size(0) * (1 - pr_cfg[current_block])),logger)
             else:
                 raise('Method not exist!')
             cfg.append(len(centroids))
-            centroids_state_dict[name + '.conv1.weight'] = centroids
-            if args.init_method == 'random_project':
-                centroids_state_dict[name + '.conv2.weight'] = random_project(module.conv2.weight.data, len(centroids))
-            else:
-                centroids_state_dict[name + '.conv2.weight'] = direct_project(module.conv2.weight.data, indice)
 
-            prune_state_dict.append(name + '.bn1.weight')
-            prune_state_dict.append(name + '.bn1.bias')
-            prune_state_dict.append(name + '.bn1.running_var')
-            prune_state_dict.append(name + '.bn1.running_mean')
 
-            current_block+=1
 
-    model = import_module(f'model.{args.arch}').resnet(args.cfg, layer_cfg=cfg).to(device)
+    model = import_module(f'model.{args.arch}').resnet(args.cfg, layer_cfg=cfg, block_cfg = block_cfg).to(device)
+
     return model
 
 def graph_googlenet(pr_target):
@@ -347,10 +360,10 @@ def graph_googlenet(pr_target):
     model = import_module(f'model.{args.arch}').googlenet(layer_cfg=cfg).to(device)
     return model
 
-
 def graph_resnet_imagenet(pr_target):
 
     pr_cfg = []
+    block_cfg = []
     weights = []
 
     cfg = []
@@ -360,6 +373,7 @@ def graph_resnet_imagenet(pr_target):
 
     current_index = 0
     index = 0
+    #start_time = time.time()
     #Sort the weights and get the pruning threshold
     for name, module in origin_model.named_modules():
 
@@ -379,7 +393,31 @@ def graph_resnet_imagenet(pr_target):
             weights.append(conv2_weight.view(-1))
 
             index += 1
-            
+
+    #for each stage, give the same prune rate for all blocks' output
+    blocks_num = [3, 4, 6, 3]
+    tmp_weight = []
+    block_weights = []
+    stage = 0
+    block_index = 0
+    index = 0
+    for name, module in origin_model.named_modules():
+
+        if isinstance(module, Bottleneck):
+
+            conv_weight = torch.div(module.conv3.weight.data,math.pow(flops_cfg[args.cfg][index],flops_lambda[args.cfg]))
+            #conv1_weight = module.conv1.weight.data
+            if block_index == 0:
+                tmp_weight = conv_weight.view(-1)
+            else:
+                tmp_weight = torch.cat((tmp_weight, conv_weight.view(-1)),0)
+            block_index += 1
+            if block_index == blocks_num[stage]:
+                block_weights.append(tmp_weight)
+                block_index = 0
+                stage += 1
+            index += 1
+    weights.extend(block_weights)
     all_weights = torch.cat(weights,0)
     preserve_num = int(all_weights.size(0) * (1-pr_target))
     preserve_weight, _ = torch.topk(torch.abs(all_weights), preserve_num)
@@ -388,27 +426,26 @@ def graph_resnet_imagenet(pr_target):
     #Based on the pruning threshold, the prune cfg of each layer is obtained
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
-    print(pr_cfg)
+    for weight in block_weights:
+        block_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
+    #print(pr_cfg)
+    #print(block_cfg)
+    #current_time = time.time()
+    #print("Find Structure Time {:.2f}s".format(current_time - start_time))
     #Get the preseverd filters after pruning by graph method based on pruning proportion
+    block_index = 0
+    stage = 0
+
     for name, module in origin_model.named_modules():
-
+       
         if isinstance(module, BasicBlock):
-
+            
             conv1_weight = module.conv1.weight.data
             _, _, centroids, indice = graph_weight(conv1_weight, int(conv1_weight.size(0) * (1 - pr_cfg[current_index])),logger)
             cfg.append(len(centroids))
             cfg.append(0) #assume baseblock has three conv layer
             centroids_state_dict[name + '.conv1.weight'] = centroids
-            if args.init_method == 'random_project':
-                centroids_state_dict[name + '.conv2.weight'] = random_project(module.conv2.weight.data, len(centroids))
-            else:
-                centroids_state_dict[name + '.conv2.weight'] = direct_project(module.conv2.weight.data, indice)
 
-            prune_state_dict.append(name + '.bn1.weight')
-            prune_state_dict.append(name + '.bn1.bias')
-            prune_state_dict.append(name + '.bn1.running_var')
-            prune_state_dict.append(name + '.bn1.running_mean')
-            current_index+=1
 
         elif isinstance(module, Bottleneck):
 
@@ -416,33 +453,25 @@ def graph_resnet_imagenet(pr_target):
             _, _, centroids, indice = graph_weight(conv1_weight, int(conv1_weight.size(0) * (1 - pr_cfg[current_index])),logger)
             cfg.append(len(centroids))
             indices.append(indice)
-            centroids_state_dict[name + '.conv1.weight'] = centroids
-
-            prune_state_dict.append(name + '.bn1.weight')
-            prune_state_dict.append(name + '.bn1.bias')
-            prune_state_dict.append(name + '.bn1.running_var')
-            prune_state_dict.append(name + '.bn1.running_mean')
-            current_index+=1
+            centroids_state_dict[name + '.conv1.weight'] = centroids.reshape((-1, conv1_weight.size(1), conv1_weight.size(2), conv1_weight.size(3)))
+            
+            current_index += 1
 
             conv2_weight = module.conv2.weight.data
             _, _, centroids, indice = graph_weight(conv2_weight, int(conv2_weight.size(0) * (1 - pr_cfg[current_index])),logger)
             cfg.append(len(centroids))
             centroids_state_dict[name + '.conv2.weight'] = centroids.reshape((-1, conv2_weight.size(1), conv2_weight.size(2), conv2_weight.size(3)))
 
-            if args.init_method == 'random_project':
-                centroids_state_dict[name + '.conv3.weight'] = random_project(module.conv3.weight.data, len(centroids))
-            else:
-                centroids_state_dict[name + '.conv3.weight'] = direct_project(module.conv3.weight.data, indice)
-
-            prune_state_dict.append(name + '.bn2.weight')
-            prune_state_dict.append(name + '.bn2.bias')
-            prune_state_dict.append(name + '.bn2.running_var')
-            prune_state_dict.append(name + '.bn2.running_mean')
             current_index+=1
 
+    prune_state_dict.append('fc.weight')
+    prune_state_dict.append('fc.bias')
+
+    cfg.extend(block_cfg)
+    print(cfg)
     model = import_module(f'model.{args.arch}').resnet(args.cfg, layer_cfg=cfg).to(device)
 
-    return model   
+    return model    
 
 def graph_mobilenet_v1(pr_target):    
 
@@ -516,9 +545,6 @@ def graph_mobilenet_v1(pr_target):
 
     return model
 
-
-
-
 def graph_mobilenet_v2(pr_target):
     pr_cfg = []
     weights = []
@@ -577,9 +603,66 @@ def graph_mobilenet_v2(pr_target):
 
     return model
 
-def main():
-    print('==> Building Model..')
+def graph_mobilenetv2_cifar(pr_target):
+    pr_cfg = []
+    weights = []
 
+    cfg = []
+    centroids_state_dict = {}
+    prune_state_dict = []
+    current_index = 0
+    cat_cfg = [2,3,4,3,3,1,1]
+    c_index, i_index = 0, 0 
+
+    f_index = 0
+    # Sort the weights and get the pruning threshold
+    for name, module in origin_model.named_modules():
+
+        if isinstance(module, InvertedResidual):
+            conv1_weight = module.conv[3].weight.data
+            if len(module.conv) == 5: #expand_ratio = 1
+                #weights.append(conv1_weight.view(-1))
+                weights.append(torch.div(conv1_weight.view(-1),math.pow(flops_cfg[args.cfg][f_index],flops_lambda[args.cfg])))
+                f_index += 1
+            else:   
+                conv2_weight = module.conv[6].weight.data       
+                if i_index == 0:
+                    conv_weight = torch.cat((conv1_weight.view(-1),conv2_weight.view(-1)),0)
+                else:
+                    conv_weight = torch.cat((conv_weight,torch.cat((conv1_weight.view(-1),conv2_weight.view(-1)),0)),0)
+                i_index += 1
+                if i_index == cat_cfg[c_index]:
+                    conv_weight = torch.div(conv_weight,math.pow(flops_cfg[args.cfg][f_index],flops_lambda[args.cfg]))
+                    weights.append(conv_weight)  
+                    c_index += 1
+                    i_index = 0
+                    f_index += 1      
+
+    weights.append(torch.div(origin_model.state_dict()['features.18.0.weight'].view(-1),math.pow(flops_cfg[args.cfg][7],flops_lambda[args.cfg])))  #lastlayer          
+
+    all_weights = torch.cat(weights, 0)
+    preserve_num = int(all_weights.size(0) * (1 - pr_target))
+    preserve_weight, _ = torch.topk(torch.abs(all_weights), preserve_num)
+    threshold = preserve_weight[preserve_num - 1]
+
+    # Based on the pruning threshold, the prune cfg of each layer is obtained
+    for weight in weights:
+        pr_cfg.append(torch.sum(torch.lt(torch.abs(weight), threshold)).item() / weight.size(0))
+    print(pr_cfg)
+    graph_cfg = []
+    graph_cfg.append(pr_cfg[0])
+    for i in range(len(cat_cfg)):
+        for j in range(cat_cfg[i]):
+            graph_cfg.append(pr_cfg[i+1])
+    #print(graph_cfg)
+
+    model = import_module(f'model.{args.arch}').mobilenet_v2(layer_cfg=graph_cfg).to(device)
+
+    return model
+
+def main():
+
+    print('==> Building Model..')
     if args.arch == 'vgg_cifar':
         model = graph_vgg(args.pr_target)
     elif args.arch == 'resnet_cifar':
@@ -590,11 +673,16 @@ def main():
         model = graph_resnet_imagenet(args.pr_target)
     elif args.arch == 'mobilenet_v1':
         model = graph_mobilenet_v1(args.pr_target)
+    elif args.arch == 'mobilenetv2_cifar':
+        model = graph_mobilenetv2_cifar(args.pr_target)
     elif args.arch == 'mobilenet_v2':
         model = graph_mobilenet_v2(args.pr_target)
     else:
         raise('arch not exist!')
     print("Graph Down!")
+
+    #from torchsummaryX import summary
+    #summary(model, torch.zeros((1, 3, 224, 224)).to(device))
     orichannel = 0
     channel = 0
 
@@ -616,6 +704,8 @@ def main():
         origin_model.load_state_dict(ckpt['state_dict'])
     elif args.arch == 'mobilenet_v2':
         origin_model = import_module(f'model.{args.arch}_flops').mobilenet_v2().to(device)
+    elif args.arch == 'mobilenetv2_cifar':
+        origin_model = import_module(f'model.{args.arch}').mobilenet_v2().to(device)
         #origin_model.load_state_dict(ckpt)
     elif args.arch == 'vgg_cifar':
         origin_model = import_module(f'model.{args.arch}').VGG(args.cfg).to(device)
@@ -628,6 +718,7 @@ def main():
         origin_model.load_state_dict(ckpt['state_dict'])
     else:
         raise('arch not exist!')
+    
     oriflops, oriparams = profile(origin_model, inputs=(Input, ))
     flops, params = profile(model, inputs=(Input, ))
 
@@ -656,7 +747,7 @@ def main():
     logger.info('Channels Prune Rate: %d/%d (%.2f%%)' % (channel, orichannel, 100. * (orichannel - channel) / orichannel))
     logger.info('Params Compress Rate: %.2f M/%.2f M(%.2f%%)' % (params/1000000, oriparams/1000000, 100. * (oriparams- params) / oriparams))
     logger.info('FLOPS Compress Rate: %.2f M/%.2f M(%.2f%%)' % (flops/1000000, oriflops/1000000, 100. * (oriflops- flops) / oriflops))
-
+    
 
 
 if __name__ == '__main__':
