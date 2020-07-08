@@ -104,9 +104,9 @@ python test.py
 ```
 ## CIFAR-10
 
-| Full Model            | Params         | Flops           |lr_type | lightening | Accuracy | Model                                                        |
+| Full Model            | Params(PR)     | Flops(PR)       |lr_type | lightening | Accuracy | Model                                                        |
 | --------------------- | -------------- | ----------------|------- | ---------- |-------- | ----------------------------------------------------------- |
-| VGG-16 (Baseline)     | 14.73 M(0.0%)  | 314.04 M(0.0%)  | step   |  \&#x2612   | 93.02%   | [pre-trained](https://drive.google.com/open?id=1sAax46mnA01qK6S_J5jFr19Qnwbl1gpm) |
+| VGG-16 (Baseline)     | 14.73 M(0.0%)  | 314.04 M(0.0%)  | step   |  &check   | 93.02%   | [pre-trained](https://drive.google.com/open?id=1sAax46mnA01qK6S_J5jFr19Qnwbl1gpm) |
 | VGG-16-0.86           | 0.74 M(94.95%) | 81.31 M(74.11%) | step   |  &#x2612   | 93.32%   | [pruned](https://drive.google.com/drive/folders/12LkQCfAPXHovR7mTYfOuyIfMuFoxaa4c?usp=sharing) |
 | ResNet-56 (Baseline)  | 0.85 M(0.0%)   | 126.56 M(0.0%)  | step   |  &#x2612   | 93.26%   | [pre-trained](https://drive.google.com/open?id=1pt-LgK3kI_4ViXIQWuOP0qmmQa3p2qW5) |
 | ResNet-56-0.56        | 0.39M(54.47%)  | 55.26 M(56.34%) | step   |  &#x2612   | 93.27%   | [pruned](https://drive.google.com/drive/folders/1Yijljk_-imnrlm8tPPq8UkXAdkSwp4MU?usp=sharing) |
