@@ -59,6 +59,9 @@ parser.add_argument(
     help='Continue training from last epoch, keep all traning configurations as before.'
 )
 
+parser.add_argument('-p', '--print_freq', default=20, type=int,
+                    metavar='N', help='print frequency (default: 10)')
+
 parser.add_argument(
     '--train_batch_size',
     type=int,

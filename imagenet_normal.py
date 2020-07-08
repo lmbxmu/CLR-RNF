@@ -7,7 +7,8 @@ import utils.common as utils
 import os
 import time
 import math
-from data import imagenet_dali
+#from data import imagenet_dali
+from data import imagenet
 from importlib import import_module
 from model.resnet_imagenet import BasicBlock, Bottleneck
 from model.mobilenet_v2 import InvertedResidual
@@ -30,17 +31,24 @@ loss_func = loss_func.cuda()
 
 
 # Data
+data_tmp = imagenet.Data(args)
+trainLoader = data_tmp.trainLoader
+testLoader = data_tmp.testLoader
+print(len(trainLoader))
+
+'''
 print('==> Preparing data..')
 def get_data_set(type='train'):
     if type == 'train':
         return imagenet_dali.get_imagenet_iter_dali('train', args.data_path, args.train_batch_size,
-                                                   num_threads=10, crop=224, device_id=args.gpus[0], num_gpus=1)
+                                                   num_threads=4, crop=224, device_id=args.gpus[0], num_gpus=1)
     else:
         return imagenet_dali.get_imagenet_iter_dali('val', args.data_path, args.eval_batch_size,
                                                    num_threads=4, crop=224, device_id=args.gpus[0], num_gpus=1)
 trainLoader = get_data_set('train')
 testLoader = get_data_set('test')
-
+print(len(trainLoader))
+'''
 flops_cfg = {
     'resnet50':[2]*3+[1.5]*4+[1]*6+[0.5]*3,
     'mobilenet_v2':[1,3,1.5,0.5,2,1.5,1,0.5]
@@ -293,7 +301,7 @@ def graph_resnet(pr_target):
     prune_state_dict.append('fc.bias')
     '''
     cfg.extend(block_cfg)
-    print(cfg)
+    #print(cfg)
     model = import_module(f'model.{args.arch}').resnet(args.cfg, layer_cfg=cfg).to(device)
     if args.init_method == 'random_project' or args.init_method == 'direct_project':
         pretrain_state_dict = origin_model.state_dict()
@@ -316,7 +324,7 @@ def graph_resnet(pr_target):
             if k in prune_state_dict:
                 continue
             elif k in centroids_state_dict_keys:
-                print(k)
+                #print(k)
                 state_dict[k] = torch.FloatTensor(centroids_state_dict[k]).view_as(state_dict[k])
             else:
                 state_dict[k] = pretrain_state_dict[k]
@@ -621,24 +629,26 @@ def graph_mobilenet_v2(pr_target):
         pass
     return model, graph_cfg
 
+
 def train(model, optimizer, trainLoader, args, epoch, topk=(1,)):
 
     model.train()
     losses = utils.AverageMeter()
     accuracy = utils.AverageMeter()
     top5_accuracy = utils.AverageMeter()
-    print_freq = trainLoader._size // args.train_batch_size // 10
+    #print_freq = len(trainLoader) // args.train_batch_size // 10
+
     start_time = time.time()
     #i = 0
-    for batch, batch_data in enumerate(trainLoader):
+    for batch, (inputs, targets) in enumerate(trainLoader):
 
-        inputs = batch_data[0]['data'].to(device)
-        targets = batch_data[0]['label'].squeeze().long().to(device)
+        inputs = inputs.to(device)
+        targets = targets.to(device)
         #i += 1
         #if i > 2:
             #break
-        adjust_learning_rate(optimizer, epoch, batch, trainLoader._size // args.train_batch_size)
-
+        adjust_learning_rate(optimizer, epoch, batch, len(trainLoader) // args.train_batch_size)
+        #print(len(trainLoader))
         optimizer.zero_grad()
         output = model(inputs)
         loss = criterion(output, targets)
@@ -650,7 +660,7 @@ def train(model, optimizer, trainLoader, args, epoch, topk=(1,)):
         accuracy.update(prec1[0], inputs.size(0))
         top5_accuracy.update(prec1[1], inputs.size(0))
 
-        if batch % print_freq == 0 and batch != 0:
+        if batch % args.print_freq == 0 and batch != 0:
             current_time = time.time()
             cost_time = current_time - start_time
             logger.info(
@@ -659,12 +669,12 @@ def train(model, optimizer, trainLoader, args, epoch, topk=(1,)):
                 'Top1 {:.2f}%\t'
                 'Top5 {:.2f}%\t'
                 'Time {:.2f}s'.format(
-                    epoch, batch * args.train_batch_size, trainLoader._size,
+                    epoch, batch, len(trainLoader),
                     float(losses.avg), float(accuracy.avg), float(top5_accuracy.avg), cost_time
                 )
             )
             start_time = current_time
-    trainLoader.reset()
+    #trainLoader.reset()
 
 def test(model, testLoader, topk=(1,)):
     model.eval()
@@ -676,12 +686,12 @@ def test(model, testLoader, topk=(1,)):
     start_time = time.time()
     with torch.no_grad():
         #i = 0
-        for batch_idx, batch_data in enumerate(testLoader):
+        for batch_idx, (inputs, targets) in enumerate(testLoader):
             #i += 1
             #if i > 2:
                 #break
-            inputs = batch_data[0]['data'].to(device)
-            targets = batch_data[0]['label'].squeeze().long().to(device)
+            inputs = inputs.to(device)
+            targets = targets.to(device)
             outputs = model(inputs)
             loss = loss_func(outputs, targets)
 
@@ -695,7 +705,7 @@ def test(model, testLoader, topk=(1,)):
             'Test Loss {:.4f}\tTop1 {:.2f}%\tTop5 {:.2f}%\tTime {:.2f}s\n'
                 .format(float(losses.avg), float(accuracy.avg), float(top5_accuracy.avg), (current_time - start_time))
         )
-    testLoader.reset()
+    #testLoader.reset()
     return accuracy.avg, top5_accuracy.avg
 
 def adjust_learning_rate(optimizer, epoch, step, len_epoch):
@@ -731,7 +741,7 @@ def main():
     best_top5_acc = 0.0
 
     test(origin_model, testLoader, topk=(1, 5))
-    testLoader.reset()
+    #testLoader.reset()
 
     print('==> Building Model..')
     if args.resume == None:
