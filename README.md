@@ -104,16 +104,16 @@ python test.py
 ```
 ## CIFAR-10
 
-| Full Model            | Params         | Flops            | Accuracy | Model                                                        |
-| --------------------- | -------------- | ---------------- | -------- | ------------------------------------------------------------ |
-| VGG-16 (Baseline)     | 14.73 M(0.0%)  | 314.04 M(0.0%)   | 93.02%   | [pre-trained](https://drive.google.com/open?id=1sAax46mnA01qK6S_J5jFr19Qnwbl1gpm) |
-| VGG-16-0.86           | 0.74 M(94.95%) | 81.31 M(74.11%)  | 93.32%   | [pruned](https://drive.google.com/drive/folders/12LkQCfAPXHovR7mTYfOuyIfMuFoxaa4c?usp=sharing) |
-| ResNet-56 (Baseline)  | 0.85 M(0.0%)   | 126.56 M(0.0%)   | 93.26%   | [pre-trained](https://drive.google.com/open?id=1pt-LgK3kI_4ViXIQWuOP0qmmQa3p2qW5) |
-| ResNet-56-0.56        | 0.39M(54.47%)  | 55.26 M(56.34%)  | 93.27%   | [pruned](https://drive.google.com/drive/folders/1Yijljk_-imnrlm8tPPq8UkXAdkSwp4MU?usp=sharing) |
-| ResNet-110 (Baseline) | 1.73 M(0.0%)   | 254.99 M(0.0%)   | 93.53%   | [pre-trained](https://drive.google.com/open?id=1Uqg8_J-q2hcsmYTAlRtknCSrkXDqYDMD) |
-| ResNet-110-0.69       | 0.53 M(69.14%) | 86.80 M(65.96%)  | 93.71%   | [pruned](https://drive.google.com/drive/folders/1IrGVxCPBNHsd7LElehaRkHQhc1_Mvi15?usp=sharing) |
-| GoogLeNet (Baseline)  | 6.17 M(0.0%)   | 1529.43 M(0.0%)  | 95.03%   | [pre-trained](https://drive.google.com/open?id=1YNno621EuTQTVY2cElf8YEue9J4W5BEd) |
-| GoogLeNet-0.91        | 2.18 M(64.70%) | 491.54 M(67.86%) | 94.85%   | [pruned](https://drive.google.com/drive/folders/1I0k-WBVFoLT0kzN1cROkNudSI3jAY8LG?usp=sharing) |
+| Full Model            | Params         | Flops           |lr_type | Accuracy | Model                                                        |
+| --------------------- | -------------- | ----------------|------- | -------- | ----------------------------------------------------------- |
+| VGG-16 (Baseline)     | 14.73 M(0.0%)  | 314.04 M(0.0%)  | step   | 93.02%   | [pre-trained](https://drive.google.com/open?id=1sAax46mnA01qK6S_J5jFr19Qnwbl1gpm) |
+| VGG-16-0.86           | 0.74 M(94.95%) | 81.31 M(74.11%) | step   | 93.32%   | [pruned](https://drive.google.com/drive/folders/12LkQCfAPXHovR7mTYfOuyIfMuFoxaa4c?usp=sharing) |
+| ResNet-56 (Baseline)  | 0.85 M(0.0%)   | 126.56 M(0.0%)  | step   | 93.26%   | [pre-trained](https://drive.google.com/open?id=1pt-LgK3kI_4ViXIQWuOP0qmmQa3p2qW5) |
+| ResNet-56-0.56        | 0.39M(54.47%)  | 55.26 M(56.34%) | step   | 93.27%   | [pruned](https://drive.google.com/drive/folders/1Yijljk_-imnrlm8tPPq8UkXAdkSwp4MU?usp=sharing) |
+| ResNet-110 (Baseline) | 1.73 M(0.0%)   | 254.99 M(0.0%)  | step   | 93.53%   | [pre-trained](https://drive.google.com/open?id=1Uqg8_J-q2hcsmYTAlRtknCSrkXDqYDMD) |
+| ResNet-110-0.69       | 0.53 M(69.14%) | 86.80 M(65.96%) | step   | 93.71%   | [pruned](https://drive.google.com/drive/folders/1IrGVxCPBNHsd7LElehaRkHQhc1_Mvi15?usp=sharing) |
+| GoogLeNet (Baseline)  | 6.17 M(0.0%)   | 1529.43 M(0.0%) | step   | 95.03%   | [pre-trained](https://drive.google.com/open?id=1YNno621EuTQTVY2cElf8YEue9J4W5BEd) |
+| GoogLeNet-0.91        | 2.18 M(64.70%) | 491.54 M(67.86%)| step   | 94.85%   | [pruned](https://drive.google.com/drive/folders/1I0k-WBVFoLT0kzN1cROkNudSI3jAY8LG?usp=sharing) |
 
 
 
