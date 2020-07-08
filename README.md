@@ -124,10 +124,11 @@ python test.py
 
 | Architecture| Params(PR)    | Flops(PR)       |lr_type | Top1-ACC | Top5-Acc | Model                                                 |
 | ---------- | -------------- | ----------------|------- | -------- | -------- | ------------------------------------------------------------ |
-| ResNet-50(Baseline) | 25.56M(0.0%) | 4113.56M(0.0%) | step | 76.01% | 92.96% | [Res50-Baseline](https://download.pytorch.org/models/resnet50-19c8e357.pth) |
-| ResNet-50 | 6.90M(72.98%) | 931.02M(77.37%) |step | 71.112% | 90.424% | [ResNet-50-0.52](https://drive.google.com/drive/folders/1rTUfyCWWNtSsMNknPw2Ddo1WDzcxY4P8?usp=sharing) |
-| ResNet-50  | 9.00M(64.77%) | 1227.23M(70.17%)|step | 72.656% | 91.085% | [ResNet-50-0.44](https://drive.google.com/drive/folders/1ICOf5k3yXEX6dOdZMaBqF4nCEeazrn3D?usp=sharing) |
-| ResNet-50 | 16.92M(33.80%) | 2445.83M(40.54%)|step | 74.851% | 92.305% | [ResNet-50-0.2](https://drive.google.com/drive/folders/1XHPCS0SD2MBWdBfSiYYVymXe61gZVqu5?usp=sharing) |
+| ResNet-50(Baseline) | 25.56M(0.0%) | 4113.56M(0.0%) | step | 76.01% | 92.96% | [pre-trained](https://download.pytorch.org/models/resnet50-19c8e357.pth) |
+| ResNet-50-0.52 | 6.90M(72.98%) | 931.02M(77.37%) |step | 71.112% | 90.424% | [pruned](https://drive.google.com/drive/folders/1rTUfyCWWNtSsMNknPw2Ddo1WDzcxY4P8?usp=sharing) |
+| ResNet-50-0.44  | 9.00M(64.77%) | 1227.23M(70.17%)|step | 72.656% | 91.085% | [pruned](https://drive.google.com/drive/folders/1ICOf5k3yXEX6dOdZMaBqF4nCEeazrn3D?usp=sharing) |
+| ResNet-50-0.2 | 16.92M(33.80%) | 2445.83M(40.54%)|step | 74.851% | 92.305% | [pruned](https://drive.google.com/drive/folders/1XHPCS0SD2MBWdBfSiYYVymXe61gZVqu5?usp=sharing) |
+| ResNet-50-0.44  | 9.00M(64.77%) | 1227.23M(70.17%)|cos | 73.344% | 91.271% | [pruned]
 
 
 ## Pretrained model
