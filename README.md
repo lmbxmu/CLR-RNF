@@ -104,8 +104,8 @@ python test.py
 ```
 ## CIFAR-10
 
-| Full Model            | Parameter(PR)   | Flops(PR)       |lr_type | lightening | Accuracy | Model                                                        |
-| --------------------- | -------------- | ---------------- |--------| -------- | ------------------------------------------------------------ |
+| Full Model            | Parameter(PR)   | Flops(PR)       |lr_type | lightening | Accuracy | Model             |
+| --------------------- | -------------- | ---------------- |--------| -------- | -----------|--------------------|
 | VGG-16 (Baseline)     | 14.73 M(0.0%)  | 314.04 M(0.0%)   |  step  | &#10006; | 93.02%   | [VGG-Baseline](https://drive.google.com/open?id=1sAax46mnA01qK6S_J5jFr19Qnwbl1gpm) |
 | VGG-16                | 0.74 M(94.95%) | 81.31 M(74.11%)  |  step  | &#10006; | 93.32%   | [VGG-0.86](https://drive.google.com/drive/folders/12LkQCfAPXHovR7mTYfOuyIfMuFoxaa4c?usp=sharing) |
 | ResNet-56 (Baseline)  | 0.85 M(0.0%)   | 126.56 M(0.0%)   |  step  | &#10006; | 93.26%   | [Res56-Baseline](https://drive.google.com/open?id=1pt-LgK3kI_4ViXIQWuOP0qmmQa3p2qW5) |
@@ -120,7 +120,7 @@ python test.py
 
 
 ## ImageNet
-| Architecture| Parameter(PR) | Flops(PR)       |lr_type | lightening | Top1-Acc | Top5-Acc | Model                                                 |
+| Architecture| Parameter(PR) | Flops(PR)       |lr_type | lightening | Top1-Acc | Top5-Acc | Model                   |
 | ---------- | -------------- | ----------------|------- | ----------| -------- | -------- | --------------------------------------- |
 | ResNet-50(Baseline) | 25.56M(0.0%) | 4113.56M(0.0%) | step | &#10006; | 76.01% | 92.96% | [pre-trained](https://download.pytorch.org/models/resnet50-19c8e357.pth) |
 | ResNet-50-0.52 | 6.90M(72.98%) | 931.02M(77.37%) |step | &#10006;| 71.112% | 90.424% | [pruned](https://drive.google.com/drive/folders/1rTUfyCWWNtSsMNknPw2Ddo1WDzcxY4P8?usp=sharing) |
