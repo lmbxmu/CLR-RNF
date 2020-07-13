@@ -42,7 +42,29 @@ python imagenet.py
 --graph_gpu
 ```
 
- You can run the following code to prune mobilenets on ImageNet: 
+ You can run the following code to prune mobilenet_v1 on ImageNet: 
+
+```shell
+python imagenet.py 
+--dataset imagenet 
+--arch mobilenet_v1
+--cfg mobilenet_v1 
+--data_path /media/disk2/zyc/ImageNet2012 
+--pretrain_model ./pretrain/checkpoints/mobilenet_v1.pth.tar 
+--job_dir ./experiment/imagenet/mobilenet_v1 
+--lr 0.1 
+--lr_type cos
+--weight_decay 4e-5 
+--num_epochs 150 
+--gpus 0  
+--train_batch_size 256 
+--eval_batch_size 256 
+--pr_target 0.58
+--graph_gpu
+```
+
+
+ You can run the following code to prune mobilenet_v2 on ImageNet: 
 
 ```shell
 python imagenet.py 

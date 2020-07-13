@@ -30,6 +30,7 @@ flops_cfg = {
     'resnet50':[2]*3+[1.5]*4+[1]*6+[0.5]*3,
     #'mobilenet_v2':[1.0, 2.91, 2.565, 1.54125, 1.095, 1.095, 0.75375, 1.0275, 1.0275, 1.0275, 1.2675, 2.26125, 2.26125, 1.55531, 1.54219, 1.54219, 2.29219]
     #'mobilenet_v2':[1.0, 2.7375, 1.24375, 0.95906, 1.93, 1.54656, 2.29219]
+    'mobilenet_v1':[1.0, 2.74194, 2.40323, 4.67742, 2.23387, 4.40323, 2.14919, 4.26613, 4.26613, 4.26613, 4.26613, 4.26613, 2.10685],
     'mobilenet_v2':[1,3,1.5,0.5,2,1.5,1,0.5]
     #[1.0, 0.61915, 0.61915, 1.04788, 0.61247, 0.61247, 0.61247, 1.04065, 0.60913, 0.60913, 0.60913, 0.60913, 0.60913, 1.03703, 0.60746, 0.60746]
 }
@@ -38,7 +39,8 @@ flops_lambda = {
  'resnet56':10,
  'resnet110':5,
  'resnet50':0.4,
- 'mobilenet_v2':2  
+ 'mobilenet_v1':1,
+ 'mobilenet_v2':1
 }
 # Load pretrained model
 print('==> Loading pretrained model..')
@@ -480,21 +482,26 @@ def graph_mobilenet_v1(pr_target):
 
     cfg = []
     centroids_state_dict = {}
-    prune_state_dict = []
+    bn_centroids_state_dict = {}
     indices = []
 
     i = 0
+    f_index = 0
     #Sort the weights and get the pruning threshold
     for name, module in origin_model.named_modules():
         if isinstance(module, nn.Conv2d):
+            if i >= 25: 
+                break #do not prune last dw conv
             if i == 0:
-                conv_weight = module.weight.data
+                conv_weight = torch.div(module.weight.data,math.pow(flops_cfg[args.cfg][f_index],flops_lambda[args.cfg]))
                 weights.append(conv_weight.view(-1))
+                f_index += 1
             elif i % 2 == 1:
-                conv_weight = module.weight.data
+                conv_weight = torch.div(module.weight.data,math.pow(flops_cfg[args.cfg][f_index],flops_lambda[args.cfg]))
             else:
-                conv_weight_1 = module.weight.data
+                conv_weight_1 = torch.div(module.weight.data,math.pow(flops_cfg[args.cfg][f_index],flops_lambda[args.cfg]))
                 weights.append(torch.cat((conv_weight.view(-1),conv_weight_1.view(-1)),0))
+                f_index += 1
             i += 1
 
     all_weights = torch.cat(weights,0)
@@ -505,7 +512,7 @@ def graph_mobilenet_v1(pr_target):
     #Based on the pruning threshold, the prune cfg of each layer is obtained
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
-    #print(pr_cfg)
+    print(pr_cfg)
 
     current_layer = 0
 
@@ -514,6 +521,9 @@ def graph_mobilenet_v1(pr_target):
     for name, module in origin_model.named_modules():
 
         if isinstance(module, nn.Conv2d):
+            
+            if current_layer == 13:
+                break
 
             conv_weight = module.weight.data
             #print(conv_weight.size())
@@ -524,24 +534,26 @@ def graph_mobilenet_v1(pr_target):
             current_layer += 1
             flag = not flag
 
-
             indices.append(indice)
             centroids_state_dict[name + '.weight'] = centroids.reshape((-1, conv_weight.size(1), conv_weight.size(2), conv_weight.size(3)))
-            prune_state_dict.append(name + '.bias')
 
         elif isinstance(module, nn.BatchNorm2d):
-            prune_state_dict.append(name + '.weight')
-            prune_state_dict.append(name + '.bias')
-            prune_state_dict.append(name + '.running_var')
-            prune_state_dict.append(name + '.running_mean')
 
-        elif isinstance(module, nn.Linear):
-            prune_state_dict.append(name + '.weight')
-            prune_state_dict.append(name + '.bias')
+            bn_centroids_state_dict[name + '.weight'] = origin_model.state_dict()[name + '.weight'][list(indice)].cpu()
+            bn_centroids_state_dict[name + '.bias'] = origin_model.state_dict()[name + '.bias'][list(indice)].cpu()
+            bn_centroids_state_dict[name + '.running_var'] = origin_model.state_dict()[name + '.running_var'][list(indice)].cpu()
+            bn_centroids_state_dict[name + '.running_mean'] = origin_model.state_dict()[name + '.running_mean'][list(indice)].cpu()
 
+    cfg.append(1024)
 
     #load weight
     model = import_module(f'model.{args.arch}').mobilenet_v1(layer_cfg=cfg).to(device)
+    '''
+    for param_tensor in model.state_dict():
+        print(param_tensor, '\t', model.state_dict()[param_tensor].size())
+    for param_tensor in centroids_state_dict:
+        print(param_tensor, '\t', centroids_state_dict[param_tensor].size())
+    '''
 
     return model
 
@@ -700,8 +712,8 @@ def main():
         origin_model = import_module(f'model.{args.arch}').resnet(args.cfg).to(device)
         origin_model.load_state_dict(ckpt)
     elif args.arch == 'mobilenet_v1':
-        origin_model = import_module(f'model.{args.arch}').mobilenet_v1().to(device)
-        origin_model.load_state_dict(ckpt['state_dict'])
+        origin_model = import_module(f'model.{args.arch}_flops').mobilenet_v1().to(device)
+        #origin_model.load_state_dict(ckpt['state_dict'])
     elif args.arch == 'mobilenet_v2':
         origin_model = import_module(f'model.{args.arch}_flops').mobilenet_v2().to(device)
     elif args.arch == 'mobilenetv2_cifar':
