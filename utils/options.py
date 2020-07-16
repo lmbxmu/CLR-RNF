@@ -13,9 +13,14 @@ parser.add_argument(
 parser.add_argument(
     '--dataset',
     type=str,
-    default='cifar10',
-    help='Select dataset to train. default:cifar10',
+    default='ImageNet',
+    help='Select dataset to train. default:ImageNet',
 )
+
+parser.add_argument(
+    '--use_dali',
+    action='store_true',
+    help='whether use dali module to load data')
 
 parser.add_argument(
     '--data_path',

@@ -527,22 +527,13 @@ def graph_mobilenet_v1(pr_target):
 
             conv_weight = module.weight.data
             #print(conv_weight.size())
-            _, _, centroids, indice = graph_weight(conv_weight, int(conv_weight.size(0) * (1 - pr_cfg[current_layer])),logger)
             if flag:
+                cfg.append(int(conv_weight.size(0) * (1 - pr_cfg[current_layer])))
                 current_layer -= 1
-                cfg.append(len(centroids))
+                
             current_layer += 1
             flag = not flag
 
-            indices.append(indice)
-            centroids_state_dict[name + '.weight'] = centroids.reshape((-1, conv_weight.size(1), conv_weight.size(2), conv_weight.size(3)))
-
-        elif isinstance(module, nn.BatchNorm2d):
-
-            bn_centroids_state_dict[name + '.weight'] = origin_model.state_dict()[name + '.weight'][list(indice)].cpu()
-            bn_centroids_state_dict[name + '.bias'] = origin_model.state_dict()[name + '.bias'][list(indice)].cpu()
-            bn_centroids_state_dict[name + '.running_var'] = origin_model.state_dict()[name + '.running_var'][list(indice)].cpu()
-            bn_centroids_state_dict[name + '.running_mean'] = origin_model.state_dict()[name + '.running_mean'][list(indice)].cpu()
 
     cfg.append(1024)
 

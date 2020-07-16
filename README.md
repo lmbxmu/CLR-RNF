@@ -184,4 +184,5 @@ optional arguments:
   --criterion           Loss function. default:Softmax. optional:SmoothSoftmax
   --graph_method        Method to recontruct the graph of filters. default:knn other:kmeans/random
   --resume              Continue training from specific checkpoint. For example:./experiment/imagenet/resnet50_redidual/checkpoint/model_last.pt
+  --use_dali            If this parameter exists, use dali module to load ImageNet data.
 ```

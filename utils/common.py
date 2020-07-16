@@ -19,14 +19,15 @@ device = torch.device(f"cuda:{args.gpus[0]}") if torch.cuda.is_available() else 
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
-
-    def __init__(self):
+    def __init__(self, name, fmt=':f'):
+        self.name = name
+        self.fmt = fmt
         self.reset()
 
     def reset(self):
-        self.val = 0.0
-        self.avg = 0.0
-        self.sum = 0.0
+        self.val = 0
+        self.avg = 0
+        self.sum = 0
         self.count = 0
 
     def update(self, val, n=1):
@@ -35,6 +36,39 @@ class AverageMeter(object):
         self.count += n
         self.avg = self.sum / self.count
 
+    def __str__(self):
+        fmtstr = '{name} {val' + self.fmt + '} ({avg' + self.fmt + '})'
+        return fmtstr.format(**self.__dict__)
+
+'''record configurations'''
+class record_config():
+    def __init__(self, args):
+        now = datetime.datetime.now().strftime('%Y-%m-%d-%H:%M:%S')
+        today = datetime.date.today()
+
+        self.args = args
+        self.job_dir = Path(args.job_dir)
+
+        def _make_dir(path):
+            if not os.path.exists(path):
+                os.makedirs(path)
+
+        _make_dir(self.job_dir)
+
+        config_dir = self.job_dir / 'config.txt'
+        #if not os.path.exists(config_dir):
+        if args.resume != None:
+            with open(config_dir, 'a') as f:
+                f.write(now + '\n\n')
+                for arg in vars(args):
+                    f.write('{}: {}\n'.format(arg, getattr(args, arg)))
+                f.write('\n')
+        else:
+            with open(config_dir, 'w') as f:
+                f.write(now + '\n\n')
+                for arg in vars(args):
+                    f.write('{}: {}\n'.format(arg, getattr(args, arg)))
+                f.write('\n')
 
 class checkpoint():
     def __init__(self, args):
@@ -53,12 +87,7 @@ class checkpoint():
         _make_dir(self.ckpt_dir)
         _make_dir(self.run_dir)
 
-        config_dir = self.job_dir / 'config.txt'
-        with open(config_dir, 'w') as f:
-            f.write(now + '\n\n')
-            for arg in vars(args):
-                f.write('{}: {}\n'.format(arg, getattr(args, arg)))
-            f.write('\n')
+        record_config(args)
 
     def save_model(self, state, epoch, is_best):
         save_path = f'{self.ckpt_dir}/model_last.pt'
