@@ -148,8 +148,6 @@ def graph_vgg(pr_target):
     return model, cfg
 
 def graph_resnet(pr_target):
-
-    
     weights = []
 
     cfg = []
@@ -591,9 +589,9 @@ def graph_mobilenet_v2(pr_target):
 def train(model, optimizer, trainLoader, args, epoch, topk=(1,)):
 
     model.train()
-    losses = utils.AverageMeter()
-    accuracy = utils.AverageMeter()
-    top5_accuracy = utils.AverageMeter()
+    losses = utils.AverageMeter('Time', ':6.3f')
+    accuracy = utils.AverageMeter('Time', ':6.3f')
+    top5_accuracy = utils.AverageMeter('Time', ':6.3f')
     print_freq = len(trainLoader.dataset) // args.train_batch_size // 10
     start_time = time.time()
     for batch, (inputs, targets) in enumerate(trainLoader):
@@ -640,9 +638,9 @@ def train(model, optimizer, trainLoader, args, epoch, topk=(1,)):
 def test(model, testLoader, topk=(1,)):
     model.eval()
 
-    losses = utils.AverageMeter()
-    accuracy = utils.AverageMeter()
-    top5_accuracy = utils.AverageMeter()
+    losses = utils.AverageMeter('Time', ':6.3f')
+    accuracy = utils.AverageMeter('Time', ':6.3f')
+    top5_accuracy = utils.AverageMeter('Time', ':6.3f')
 
     start_time = time.time()
     with torch.no_grad():

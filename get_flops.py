@@ -167,52 +167,21 @@ def graph_vgg(pr_target):
 
 def graph_resnet(pr_target):
 
-    
+    pr_cfg = []
     weights = []
 
     cfg = []
-    pr_cfg = []
     centroids_state_dict = {}
     prune_state_dict = []
 
     current_block = 0
-    index = 0
-    #start_time = time.time()
+
     #Sort the weights and get the pruning threshold
     for name, module in origin_model.named_modules():
         if isinstance(module, ResBasicBlock):
 
-            #conv_weight = module.conv1.weight.data
-            conv_weight = torch.div(module.conv1.weight.data,math.pow(flops_cfg[args.cfg][index],flops_lambda[args.cfg]))
+            conv_weight = module.conv1.weight.data
             weights.append(conv_weight.view(-1))
-            index += 1
-
-    block_cfg = []
-    blocks_num = [9, 9, 9]
-
-    #for each stage, give the same prune rate for all blocks' output
-    tmp_weight = []
-    block_weights = []
-    stage = 0
-    block_index = 0
-    index = 0
-    for name, module in origin_model.named_modules():
-
-        if isinstance(module, ResBasicBlock):
-
-            conv_weight = torch.div(module.conv2.weight.data,math.pow(flops_cfg[args.cfg][index],flops_lambda[args.cfg]))
-            #conv1_weight = module.conv1.weight.data
-            if block_index == 0:
-                tmp_weight = conv_weight.view(-1)
-            else:
-                tmp_weight = torch.cat((tmp_weight, conv_weight.view(-1)),0)
-            block_index += 1
-            if block_index == blocks_num[stage]:
-                block_weights.append(tmp_weight)
-                block_index = 0
-                stage += 1
-            index += 1
-    weights.extend(block_weights)
 
     all_weights = torch.cat(weights,0)
     preserve_num = int(all_weights.size(0) * (1-pr_target))
@@ -222,10 +191,6 @@ def graph_resnet(pr_target):
     #Based on the pruning threshold, the prune cfg of each layer is obtained
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
-
-    for weight in block_weights:
-        block_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
-
     
     #Get the preseverd filters after pruning by graph method based on pruning proportion
 
@@ -233,21 +198,25 @@ def graph_resnet(pr_target):
 
         if isinstance(module, ResBasicBlock):
 
-            #first conv layer
             conv1_weight = module.conv1.weight.data
-            if args.graph_method == 'knn':
-                _, _, centroids, indice = graph_weight(conv1_weight, int(conv1_weight.size(0) * (1 - pr_cfg[current_block])),logger)
-            elif args.graph_method == 'kmeans':
-                _, centroids, indice = kmeans_weight(conv1_weight, int(conv1_weight.size(0) * (1 - pr_cfg[current_block])),logger)
-            elif args.graph_method == 'random':
-                _, centroids, indice = random_weight(conv1_weight, int(conv1_weight.size(0) * (1 - pr_cfg[current_block])),logger)
-            else:
-                raise('Method not exist!')
+
+            _, _, centroids, indice = graph_weight(conv1_weight, int(conv1_weight.size(0) * (1 - pr_cfg[current_block])),logger)
             cfg.append(len(centroids))
+            centroids_state_dict[name + '.conv1.weight'] = centroids
+            if args.init_method == 'random_project':
+                centroids_state_dict[name + '.conv2.weight'] = random_project(module.conv2.weight.data, len(centroids))
+            else:
+                centroids_state_dict[name + '.conv2.weight'] = direct_project(module.conv2.weight.data, indice)
+
+            prune_state_dict.append(name + '.bn1.weight')
+            prune_state_dict.append(name + '.bn1.bias')
+            prune_state_dict.append(name + '.bn1.running_var')
+            prune_state_dict.append(name + '.bn1.running_mean')
+
+            current_block+=1
 
 
-
-    model = import_module(f'model.{args.arch}').resnet(args.cfg, layer_cfg=cfg, block_cfg = block_cfg).to(device)
+    model = import_module(f'model.{args.arch}').resnet(args.cfg, layer_cfg=cfg).to(device)
 
     return model
 

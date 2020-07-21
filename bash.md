@@ -37,8 +37,8 @@ python cifar.py --arch mobilenetv2_cifar --cfg mobilenet_v2 --data_path /home/lm
 python get_flops.py --arch vgg_cifar --cfg vgg16 --job_dir ./experiment/flop/cgg --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/vgg16_cifar10.pt --pr_target 0.56
 python cifar.py --arch vgg_cifar --cfg vgg16 --data_path /home/lmb/ABCPrunerPlus/data/cifar --job_dir ./experiment/cifar/vgg_step4_1 --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/vgg16_cifar10.pt --lr 0.01 --lr_decay_step 50 100 --weight_decay 0.005  --num_epochs 150 --gpus 0 --pr_target 0.86 --graph_method knn
 ##resnet56
-python get_flops.py --arch resnet_cifar --cfg resnet56 --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/resnet_56.pt --job_dir ./experiment/flop/res56 --pr_target 0.56
-python cifar.py --data_path /home/lmb/ABCPrunerPlus/data/cifar --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/resnet_56.pt  --job_dir ./experiment/cifar_residual/res56_3 --arch resnet_cifar --cfg resnet56 --lr 0.01 --lr_decay_step 150 225 --weight_decay 0.005  --num_epochs 150 --gpus 1 --pr_target 0.56
+python get_flops.py --arch resnet_cifar --cfg resnet56 --pretrain_model /home/lmb/CLR-RNF-master/pretrain/resnet_56.pt --job_dir ./experiment/flop/res56 --pr_target 0.25
+python cifar.py --data_path /home/lmb/ABCPrunerPlus/data/cifar --pretrain_model /home/lmb/CLR-RNF-master/pretrain/resnet_56.pt  --job_dir ./experiment/cifar/res56_1 --arch resnet_cifar --cfg resnet56 --lr 0.01 --lr_decay_step 150 225 --weight_decay 0.005 --dataset cifar10 --num_epochs 150 --gpus 0 --pr_target 0.25
 ##resnet110
 python get_flops.py --arch resnet_cifar --cfg resnet110 --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/resnet_110.pt --job_dir ./experiment/flop/res110--pr_target 0.7
 python cifar.py --data_path /home/lmb/ABCPrunerPlus/data/cifar --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/resnet_110.pt  --job_dir ./experiment/cifar/res110_step_4_1 --arch resnet_cifar --cfg resnet110 --lr 0.01 --lr_decay_step 50 100 --weight_decay 0.005  --num_epochs 150 --gpus 0 1 --pr_target 0.69
