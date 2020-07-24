@@ -7,8 +7,10 @@ import utils.common as utils
 import os
 import time
 import math
-from data import imagenet_dali
-from data import imagenet
+if args.use_dali:
+    from data import imagenet_dali
+else:
+    from data import imagenet
 from importlib import import_module
 from model.resnet_imagenet import BasicBlock, Bottleneck
 from model.mobilenet_v2 import InvertedResidual

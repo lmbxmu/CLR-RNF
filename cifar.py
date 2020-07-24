@@ -148,6 +148,8 @@ def graph_vgg(pr_target):
     return model, cfg
 
 def graph_resnet(pr_target):
+
+    
     weights = []
 
     cfg = []
@@ -167,33 +169,6 @@ def graph_resnet(pr_target):
             weights.append(conv_weight.view(-1))
             index += 1
 
-    block_cfg = []
-    blocks_num = [9, 9, 9]
-
-    #for each stage, give the same prune rate for all blocks' output
-    tmp_weight = []
-    block_weights = []
-    stage = 0
-    block_index = 0
-    index = 0
-    for name, module in origin_model.named_modules():
-
-        if isinstance(module, ResBasicBlock):
-
-            conv_weight = torch.div(module.conv2.weight.data,math.pow(flops_cfg[args.cfg][index],flops_lambda[args.cfg]))
-            #conv1_weight = module.conv1.weight.data
-            if block_index == 0:
-                tmp_weight = conv_weight.view(-1)
-            else:
-                tmp_weight = torch.cat((tmp_weight, conv_weight.view(-1)),0)
-            block_index += 1
-            if block_index == blocks_num[stage]:
-                block_weights.append(tmp_weight)
-                block_index = 0
-                stage += 1
-            index += 1
-    weights.extend(block_weights)
-
     all_weights = torch.cat(weights,0)
     preserve_num = int(all_weights.size(0) * (1-pr_target))
     preserve_weight, _ = torch.topk(torch.abs(all_weights), preserve_num)
@@ -202,24 +177,27 @@ def graph_resnet(pr_target):
     #Based on the pruning threshold, the prune cfg of each layer is obtained
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
-
-    for weight in block_weights:
-        block_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
-
     #print(len(pr_cfg),pr_cfg)
     #current_time = time.time()
     #print("Find Structure Time {:.2f}s".format(current_time - start_time))
-
-    block_index = 0
-    stage = 0
-
-    conv1_weight = origin_model.state_dict()['conv1.weight']
-    _, _, lastcentroids, lastindice = graph_weight(conv1_weight, int(conv1_weight.size(0) * (1 - block_cfg[stage])),logger)
-    centroids_state_dict['conv1.weight'] = lastcentroids
-    prune_state_dict.append('bn1.weight')
-    prune_state_dict.append('bn1.bias')
-    prune_state_dict.append('bn1.running_var')
-    prune_state_dict.append('bn1.running_mean')
+    '''
+    #Based on the pruning threshold, the prune cfg of each layer is obtained
+    q_cfg, p_cfg, pr_cfg = [], [], []
+    t1, t2 = 0, pr_target * all_weights.size(0)
+    #Based on the pruning threshold, the prune cfg of each layer is obtained
+    for i, weight in enumerate(weights):
+        p = torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0)
+        p_cfg.append(p)
+        q_cfg.append(p*math.exp(-p))
+    for i, weight in enumerate(weights):
+        q_cfg[i] /= sum(q_cfg)
+        t1 += q_cfg[i] * weight.size(0)
+    eta = t2/t1
+    print("eta {:.6f}".format(eta))
+    for i, q in enumerate(q_cfg):
+        pr_cfg.append(q * eta)
+        print("Layer[{}] p {:.6f} q {:.6f} pr_cfg {:.6f}".format(i, p_cfg[i], q_cfg[i], pr_cfg[i]))
+    '''
     
     #Get the preseverd filters after pruning by graph method based on pruning proportion
 
@@ -227,12 +205,8 @@ def graph_resnet(pr_target):
 
         if isinstance(module, ResBasicBlock):
 
-            #first conv layer
             conv1_weight = module.conv1.weight.data
-            if args.init_method == 'random_project':
-                conv1_weight = random_project(conv1_weight, len(lastindice))
-            else:
-                conv1_weight = direct_project(conv1_weight, lastindice)
+
             if args.graph_method == 'knn':
                 _, _, centroids, indice = graph_weight(conv1_weight, int(conv1_weight.size(0) * (1 - pr_cfg[current_block])),logger)
             elif args.graph_method == 'kmeans':
@@ -243,39 +217,19 @@ def graph_resnet(pr_target):
                 raise('Method not exist!')
             cfg.append(len(centroids))
             centroids_state_dict[name + '.conv1.weight'] = centroids
-
-            #second conv layer
-            conv2_weight = module.conv2.weight.data
             if args.init_method == 'random_project':
-                conv2_weight = random_project(conv2_weight, len(centroids))
+                centroids_state_dict[name + '.conv2.weight'] = random_project(module.conv2.weight.data, len(centroids))
             else:
-                conv2_weight = direct_project(conv2_weight, indice)
-
-            _, _, centroids, lastindice = graph_weight(conv2_weight, int(conv2_weight.size(0) * (1 - block_cfg[stage])),logger)
-
-            centroids_state_dict[name + '.conv2.weight'] = centroids
+                centroids_state_dict[name + '.conv2.weight'] = direct_project(module.conv2.weight.data, indice)
 
             prune_state_dict.append(name + '.bn1.weight')
             prune_state_dict.append(name + '.bn1.bias')
             prune_state_dict.append(name + '.bn1.running_var')
             prune_state_dict.append(name + '.bn1.running_mean')
 
-            prune_state_dict.append(name + '.bn2.weight')
-            prune_state_dict.append(name + '.bn2.bias')
-            prune_state_dict.append(name + '.bn2.running_var')
-            prune_state_dict.append(name + '.bn2.running_mean')
-
             current_block+=1
 
-            block_index += 1
-            if block_index == blocks_num[stage]:
-                block_index = 0
-                stage += 1
-
-    prune_state_dict.append('fc.weight')
-    prune_state_dict.append('fc.bias')
-
-    model = import_module(f'model.{args.arch}').resnet(args.cfg, layer_cfg=cfg, block_cfg = block_cfg).to(device)
+    model = import_module(f'model.{args.arch}').resnet(args.cfg, layer_cfg=cfg).to(device)
     if args.init_method == 'random_project' or args.init_method == 'direct_project':
         pretrain_state_dict = origin_model.state_dict()
         state_dict = model.state_dict()
