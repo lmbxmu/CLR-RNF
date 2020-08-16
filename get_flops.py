@@ -30,7 +30,7 @@ flops_cfg = {
     'resnet50':[2]*3+[1.5]*4+[1]*6+[0.5]*3,
     #'mobilenet_v2':[1.0, 2.91, 2.565, 1.54125, 1.095, 1.095, 0.75375, 1.0275, 1.0275, 1.0275, 1.2675, 2.26125, 2.26125, 1.55531, 1.54219, 1.54219, 2.29219]
     #'mobilenet_v2':[1.0, 2.7375, 1.24375, 0.95906, 1.93, 1.54656, 2.29219]
-    'mobilenet_v1':[1.0, 2.74194, 2.40323, 4.67742, 2.23387, 4.40323, 2.14919, 4.26613, 4.26613, 4.26613, 4.26613, 4.26613, 2.10685],
+    'mobilenet_v1':[2.74194, 2.40323, 4.67742, 2.23387, 4.40323, 2.14919, 4.26613, 4.26613, 4.26613, 4.26613, 4.26613, 2.10685],
     'mobilenet_v2':[1,3,1.5,0.5,2,1.5,1,0.5]
     #[1.0, 0.61915, 0.61915, 1.04788, 0.61247, 0.61247, 0.61247, 1.04065, 0.60913, 0.60913, 0.60913, 0.60913, 0.60913, 1.03703, 0.60746, 0.60746]
 }
@@ -461,7 +461,10 @@ def graph_mobilenet_v1(pr_target):
         if isinstance(module, nn.Conv2d):
             if i >= 25: 
                 break #do not prune last dw conv
-            if i == 0:
+            if i <= 1:
+                i += 1
+                continue #do not prune first dw conv
+            if i == 2:
                 conv_weight = torch.div(module.weight.data,math.pow(flops_cfg[args.cfg][f_index],flops_lambda[args.cfg]))
                 weights.append(conv_weight.view(-1))
                 f_index += 1
@@ -479,6 +482,7 @@ def graph_mobilenet_v1(pr_target):
     threshold = preserve_weight[preserve_num-1]
 
     #Based on the pruning threshold, the prune cfg of each layer is obtained
+    pr_cfg.append(0)
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
     print(pr_cfg)
@@ -493,7 +497,6 @@ def graph_mobilenet_v1(pr_target):
             
             if current_layer == 13:
                 break
-
             conv_weight = module.weight.data
             #print(conv_weight.size())
             if flag:
@@ -502,7 +505,6 @@ def graph_mobilenet_v1(pr_target):
                 
             current_layer += 1
             flag = not flag
-
 
     cfg.append(1024)
 

@@ -21,7 +21,7 @@ python cifar.py --arch googlenet --cfg googlenet --job_dir ./experiment/googlene
 ##resnet50
 
 python get_flops.py --arch resnet_imagenet --cfg resnet50 --pretrain_model /Users/zhangyuxin/Documents/MAC/pretrain_model/resnet50.pth --job_dir ./experiment/imagenet/resnet50_flop --graph_gpu --pr_target 0.7
-python imagenet.py --arch resnet_imagenet --cfg resnet50 --pretrain_model /Users/zhangyuxin/Documents/MAC/pretrain_model/resnet50.pth --job_dir ./experiment/imagenet/resnet50 --pr_target 0.25
+python imagenet.py --arch resnet_imagenet --cfg resnet50 --pretrain_model /Users/zhangyuxin/Documents/MAC/pretrain_model/resnet50.pth --job_dir ./experiment/imagenet/resnet50 --pr_target 0.25 --use_dali
 
 ##mobilenet
 python imagenet.py --arch mobilenet_v2 --cfg mobilenet_v2 --pretrain_model /Users/zhangyuxin/Documents/MAC/pretrain_model/mobilenetv2_1.0-f2a8633.pth.tar --job_dir ./experiment/imagenet/mobilenet_v2 --pr_target 0.5
@@ -88,9 +88,12 @@ python test.py --arch resnet_imagenet --cfg resnet50 --data_path /media/disk2/zy
 python imagenet.py --arch resnet_imagenet --cfg resnet18 --data_path /media/disk2/zyc/ImageNet2012 --pretrain_model /home/lmb/ABCPrunerPlus/pretrain/resnet18.pth --job_dir ./experiment/imagenet/resnet18 --lr 0.1 --weight_decay 0.0001 --num_epochs 90 --lr_decay_step 30 --gpus 0 1 --train_batch_size 256 --eval_batch_size 256 --pr_target 0.8 
 
 ##resnet50
-python imagenet_past.py --arch resnet_imagenet --cfg resnet50 --data_path /media/disk2/zyc/ImageNet2012 --pretrain_model /media/disk2/zyc/prune_result/resnet_50/pruned_checkpoint/resnet50-19c8e357.pth --job_dir ./experiment/imagenet/resnet50_redidual --lr 0.1 --weight_decay 0.0001 --num_epochs 90 --gpus 0 --train_batch_size 8 --eval_batch_size 8 --pr_target 0.48
+python imagenet.py --arch resnet_imagenet --cfg resnet50 --data_path /home/sda1/data/ImageNet2012 --pretrain_model ../pretrain/resnet50.pth --job_dir ./experiment/imagenet/resnet50_redidual --lr 0.1 --weight_decay 0.0001 --num_epochs 90 --gpus 0 --train_batch_size 8 --eval_batch_size 128 --pr_target 0.48
 
-python imagenet.py --arch resnet_imagenet --cfg resnet50 --data_path /media/disk2/zyc/ImageNet2012 --pretrain_model /media/disk2/zyc/prune_result/resnet_50/pruned_checkpoint/resnet50-19c8e357.pth --job_dir ./experiment/imagenet/resnet50_redidual --lr 0.1 --weight_decay 0.0001 --num_epochs 90 --gpus 0 --train_batch_size 8 --eval_batch_size 8 --resume ./experiment/imagenet/resnet50_redidual/checkpoint/model_last.pt
+
+python imagenet.py --arch resnet_imagenet --cfg resnet50 --data_path /media/disk1/ImageNet2012 --pretrain_model ../pre-train/resnet50.pth --job_dir ./experiment/imagenet/resnet50_redidual --lr 0.1 --weight_decay 0.0001 --num_epochs 90 --gpus 0 1 --train_batch_size 8 --eval_batch_size 256 --pr_target 0.48 
+
+python imagenet.py --arch resnet_imagenet --cfg resnet50 --data_path /media/disk2/zyc/ImageNet2012 --pretrain_model /media/disk2/zyc/prune_result/resnet_50/pruned_checkpoint/resnet50-19c8e357.pth --job_dir ./experiment/imagenet/resnet50_redidual --lr 0.1 --weight_decay 0.0001 --num_epochs 90 --gpus 0 --train_batch_size 8 --eval_batch_size 128 --use_dali
 
 python get_flops.py --arch resnet_imagenet --cfg resnet50 --pretrain_model /media/disk2/zyc/prune_result/resnet_50/pruned_checkpoint/resnet50-19c8e357.pth --job_dir ./experiment/imagenet/resnet50_flop --graph_gpu --dataset imagenet --pr_target 0.48
 
@@ -98,7 +101,7 @@ python get_flops.py --arch resnet_imagenet --cfg resnet50 --pretrain_model /medi
 python imagenet.py --arch mobilenet_v2 --cfg mobilenet_v2 --data_path /media/disk2/zyc/ImageNet2012 --pretrain_model ./pretrain/checkpoints/mobilenet_v2_past.pth.tar --lr 0.1 --weight_decay 4e-5 --num_epochs 150 --gpus 1 --train_batch_size 8 --eval_batch_size 8 --pr_target 0.55 --lr_type cos --job_dir ./experiment/imagenet/mobilenet_v2_test
 
 python get_flops.py --arch mobilenet_v2 --cfg mobilenet_v2 --pretrain_model ./pretrain/checkpoints/mobilenet_v2_past.pth.tar --job_dir ./experiment/imagenet/mobilenet_v2 --pr_target 0.15 --dataset imagenet
-
-
+[0.39, 0.67, 0.47, 0.72,0.50,0.81,0.63,0.92,0.91,0.90,0.]
+[0.39, 0.6716609589041096, 0.4660127737226277, 0.718978102189781, 0.5024469339622641, 0.8133844339622641, 0.630158349328215, 0.921417646353167, 0.9167091530710173, 0.9057176703454894, 0.889159219049904, 0.8666176823416507, 0.6176771992981607]
 ##mobilenetv1
-python imagenet.py --arch mobilenet_v1 --cfg mobilenet_v1 --data_path /media/disk2/zyc/ImageNet2012 --pretrain_model ./pretrain/checkpoints/mobilenet_imagenet.pth.tar --job_dir ./experiment/imagenet/mobilenetv1 --lr 0.1 --weight_decay 0.0001  --gpus 0 1 --train_batch_size 8 --eval_batch_size 8 --pr_target 0.8 --num_epochs 150 --lr_type cos --use_dali
+python imagenet.py --arch mobilenet_v1 --cfg mobilenet_v1 --data_path /media/disk1/ImageNet2012 --pretrain_model ../pre-train/mobilenet_v1.pth.tar --job_dir ./experiment/imagenet/mobilenetv1 --lr 0.1 --weight_decay 0.0001  --gpus 0 1 --train_batch_size 8 --eval_batch_size 8 --pr_target 0.59 --num_epochs 150 --lr_type cos --use_dali

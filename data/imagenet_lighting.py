@@ -28,6 +28,7 @@ class Data:
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 normalize,
+                
             ]))
 
         self.trainLoader = DataLoader(

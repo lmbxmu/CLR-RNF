@@ -51,7 +51,7 @@ else:
 
 flops_cfg = {
     'resnet50':[2]*3+[1.5]*4+[1]*6+[0.5]*3,
-    'mobilenet_v1':[1.0, 2.74194, 2.40323, 4.67742, 2.23387, 4.40323, 2.14919, 4.26613, 4.26613, 4.26613, 4.26613, 4.26613, 2.10685],
+    'mobilenet_v1':[2.74194, 2.40323, 4.67742, 2.23387, 4.40323, 2.14919, 4.26613, 4.26613, 4.26613, 4.26613, 4.26613, 2.10685],
     'mobilenet_v2':[1,3,1.5,0.5,2,1.5,1,0.5]
     #'resnet50':[1.0, 1.67262, 0.3869, 1.26786, 0.3869, 1.26786, 0.77381, 2.02679, 0.38393, 1.25298, 0.38393, 1.25298, 0.38393, 1.25298, 0.76786, 2.01339, 0.38244, 1.24554, 0.38244, 1.24554, 0.38244, 1.24554, 0.38244, 1.24554, 0.38244, 1.24554, 0.76488, 2.0067, 0.3817, 1.24182, 0.3817, 1.24182]
 }
@@ -352,7 +352,10 @@ def graph_mobilenet_v1(pr_target):
         if isinstance(module, nn.Conv2d):
             if i >= 25: 
                 break #do not prune last dw conv
-            if i == 0:
+            if i <= 1:
+                i += 1
+                continue #do not prune first dw conv
+            if i == 2:
                 conv_weight = torch.div(module.weight.data,math.pow(flops_cfg[args.cfg][f_index],flops_lambda[args.cfg]))
                 weights.append(conv_weight.view(-1))
                 f_index += 1
@@ -370,9 +373,10 @@ def graph_mobilenet_v1(pr_target):
     threshold = preserve_weight[preserve_num-1]
 
     #Based on the pruning threshold, the prune cfg of each layer is obtained
+    pr_cfg.append(0)
     for weight in weights:
         pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
-    #print(pr_cfg)
+    print(pr_cfg)
 
     current_layer = 0
 
@@ -404,9 +408,9 @@ def graph_mobilenet_v1(pr_target):
             bn_centroids_state_dict[name + '.running_var'] = origin_model.state_dict()[name + '.running_var'][list(indice)].cpu()
             bn_centroids_state_dict[name + '.running_mean'] = origin_model.state_dict()[name + '.running_mean'][list(indice)].cpu()
 
-    cfg.append(1024)
 
     #load weight
+    cfg.append(1024)
     print(cfg)
     model = import_module(f'model.{args.arch}').mobilenet_v1(layer_cfg=cfg).to(device)
     '''
@@ -861,7 +865,6 @@ def main():
         optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
 
     else:
-
         resumeckpt = torch.load(args.resume)
         state_dict = resumeckpt['state_dict']
         cfg = resumeckpt['cfg']
