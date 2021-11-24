@@ -18,7 +18,7 @@ checkpoint = utils.checkpoint(args)
 logger = utils.get_logger(os.path.join(args.job_dir + 'logger.log'))
 loss_func = nn.CrossEntropyLoss()
 
-
+#
 def graph_vgg(pr_target):
 
     ckpt = torch.load(args.pretrain_model, map_location=device)

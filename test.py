@@ -39,22 +39,15 @@ ckpt = torch.load(args.pretrain_model, map_location=device)
 if args.arch == 'resnet_imagenet':
     origin_model = import_module(f'model.{args.arch}').resnet(args.cfg).to(device)
     origin_model.load_state_dict(ckpt)
-elif args.arch == 'mobilenet_v1':
-    origin_model = import_module(f'model.{args.arch}').mobilenet_v1().to(device)
-    origin_model.load_state_dict(ckpt['state_dict'])
-elif args.arch == 'mobilenet_v2':
-    origin_model = import_module(f'model.{args.arch}_flops').mobilenet_v2().to(device)
 else:
     raise('arch not exist!')
 
 flops_cfg = {
     'resnet50':[2]*3+[1.5]*4+[1]*6+[0.5]*3,
-    'mobilenet_v2':[1,3,1.5,0.5,2,1.5,1,0.5]
     #'resnet50':[1.0, 1.67262, 0.3869, 1.26786, 0.3869, 1.26786, 0.77381, 2.02679, 0.38393, 1.25298, 0.38393, 1.25298, 0.38393, 1.25298, 0.76786, 2.01339, 0.38244, 1.24554, 0.38244, 1.24554, 0.38244, 1.24554, 0.38244, 1.24554, 0.38244, 1.24554, 0.76488, 2.0067, 0.3817, 1.24182, 0.3817, 1.24182]
 }
 flops_lambda = {
  'resnet50':0.4,
-  'mobilenet_v2':1
 }
 
 
