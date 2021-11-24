@@ -1,4 +1,4 @@
-# GraphPruning
+# CLR-RNF
 
 
 
