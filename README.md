@@ -1,8 +1,8 @@
-# CLR-RNF
+# Pruning Networks with Cross-Layer Ranking & k-Reciprocal Nearest Filters
 
+Pytorch implementation of our paper under review -- Pruning Networks with Cross-Layer Ranking & k-Reciprocal Nearest Filters
 
-
-## GraphPruner
+## Running code
 
 You can run the following code to prune model on CIFAR-10:
 ```shell
@@ -150,15 +150,6 @@ python test.py
 | ResNet-50-0.2 | 16.92M(33.80%) | 2445.83M(40.54%)|step| &#10006; | 74.851% | 92.305% | [pruned](https://drive.google.com/drive/folders/1XHPCS0SD2MBWdBfSiYYVymXe61gZVqu5?usp=sharing) |
 | ResNet-50-0.44  | 9.00M(64.77%)| 1227.23M(70.17%)|cos| &#10006; | 73.344% | 91.271% | [pruned](https://drive.google.com/drive/folders/1qBsgORfkcGj8K90jHlCCg_UFmKFSr255?usp=sharing)|
 | ResNet-50-0     |              |                 |   | &#10004; |         |          | [pruned]|
-
-
-
-
-## Pretrained model
-| Model        | Download Link                                                |
-| ------------ | ------------------------------------------------------------ |
-| Mobilenet-v1 | https://hanlab.mit.edu/projects/amc/external/mobilenet_imagenet.pth.tar |
-| Mobilenet-v2 | https://drive.google.com/open?id=1jlto6HRVD3ipNkAl1lNhDbkBp7HylaqR |
 
 
 ## Other Arguments

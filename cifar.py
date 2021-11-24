@@ -93,6 +93,7 @@ def graph_vgg(pr_target):
         if isinstance(module, nn.Conv2d):
 
             conv_weight = module.weight.data
+            print(current_layer)
             if args.graph_method == 'knn':
                 _, _, centroids, indice = graph_weight(conv_weight, int(conv_weight.size(0) * (1 - pr_cfg[current_layer])),logger)
             elif args.graph_method == 'kmeans':
@@ -544,7 +545,7 @@ def train(model, optimizer, trainLoader, args, epoch, topk=(1,)):
 
     model.train()
     losses = utils.AverageMeter('Time', ':6.3f')
-    accuracy = utils.AverageMeter('Time', ':6.3f')
+    accurary = utils.AverageMeter('Time', ':6.3f')
     top5_accuracy = utils.AverageMeter('Time', ':6.3f')
     print_freq = len(trainLoader.dataset) // args.train_batch_size // 10
     start_time = time.time()
@@ -559,7 +560,7 @@ def train(model, optimizer, trainLoader, args, epoch, topk=(1,)):
         optimizer.step()
 
         prec1 = utils.accuracy(output, targets, topk=topk)
-        accuracy.update(prec1[0], inputs.size(0))
+        accurary.update(prec1[0], inputs.size(0))
         if len(topk) == 2:
             top5_accuracy.update(prec1[1], inputs.size(0))
 
@@ -573,7 +574,7 @@ def train(model, optimizer, trainLoader, args, epoch, topk=(1,)):
                     'Accuracy {:.2f}%\t\t'
                     'Time {:.2f}s'.format(
                         epoch, batch * args.train_batch_size, len(trainLoader.dataset),
-                        float(losses.avg), float(accuracy.avg), cost_time
+                        float(losses.avg), float(accurary.avg), cost_time
                     )
                 )
             else:
@@ -584,7 +585,7 @@ def train(model, optimizer, trainLoader, args, epoch, topk=(1,)):
                     'Top5 {:.2f}%\t'
                     'Time {:.2f}s'.format(
                         epoch, batch * args.train_batch_size, len(trainLoader.dataset),
-                        float(losses.avg), float(accuracy.avg), float(top5_accuracy.avg), cost_time
+                        float(losses.avg), float(accurary.avg), float(top5_accuracy.avg), cost_time
                     )
                 )
             start_time = current_time
@@ -593,7 +594,7 @@ def test(model, testLoader, topk=(1,)):
     model.eval()
 
     losses = utils.AverageMeter('Time', ':6.3f')
-    accuracy = utils.AverageMeter('Time', ':6.3f')
+    accurary = utils.AverageMeter('Time', ':6.3f')
     top5_accuracy = utils.AverageMeter('Time', ':6.3f')
 
     start_time = time.time()
@@ -605,7 +606,7 @@ def test(model, testLoader, topk=(1,)):
 
             losses.update(loss.item(), inputs.size(0))
             predicted = utils.accuracy(outputs, targets, topk=topk)
-            accuracy.update(predicted[0], inputs.size(0))
+            accurary.update(predicted[0], inputs.size(0))
             if len(topk) == 2:
                 top5_accuracy.update(predicted[1], inputs.size(0))
 
@@ -613,15 +614,15 @@ def test(model, testLoader, topk=(1,)):
         if len(topk) == 1:
             logger.info(
                 'Test Loss {:.4f}\tAccuracy {:.2f}%\t\tTime {:.2f}s\n'
-                .format(float(losses.avg), float(accuracy.avg), (current_time - start_time))
+                .format(float(losses.avg), float(accurary.avg), (current_time - start_time))
             )
         else:
             logger.info(
                 'Test Loss {:.4f}\tTop1 {:.2f}%\tTop5 {:.2f}%\tTime {:.2f}s\n'
-                    .format(float(losses.avg), float(accuracy.avg), float(top5_accuracy.avg), (current_time - start_time))
+                    .format(float(losses.avg), float(accurary.avg), float(top5_accuracy.avg), (current_time - start_time))
             )
     if len(topk) == 1:
-        return accuracy.avg
+        return accurary.avg
     else:
         return top5_accuracy.avg
 

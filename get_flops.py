@@ -28,10 +28,6 @@ flops_cfg = {
     'resnet110':[1.0, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.9052, 0.67278, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.89297, 0.66667, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685, 0.88685],
     #'resnet50':[1.0, 0.61915, 0.61915, 1.04788, 0.61247, 0.61247, 0.61247, 1.04065, 0.60913, 0.60913, 0.60913, 0.60913, 0.60913, 1.03703, 0.60746, 0.60746]
     'resnet50':[2]*3+[1.5]*4+[1]*6+[0.5]*3,
-    #'mobilenet_v2':[1.0, 2.91, 2.565, 1.54125, 1.095, 1.095, 0.75375, 1.0275, 1.0275, 1.0275, 1.2675, 2.26125, 2.26125, 1.55531, 1.54219, 1.54219, 2.29219]
-    #'mobilenet_v2':[1.0, 2.7375, 1.24375, 0.95906, 1.93, 1.54656, 2.29219]
-    'mobilenet_v1':[2.74194, 2.40323, 4.67742, 2.23387, 4.40323, 2.14919, 4.26613, 4.26613, 4.26613, 4.26613, 4.26613, 2.10685],
-    'mobilenet_v2':[1,3,1.5,0.5,2,1.5,1,0.5]
     #[1.0, 0.61915, 0.61915, 1.04788, 0.61247, 0.61247, 0.61247, 1.04065, 0.60913, 0.60913, 0.60913, 0.60913, 0.60913, 1.03703, 0.60746, 0.60746]
 }
 flops_lambda = {
@@ -39,8 +35,6 @@ flops_lambda = {
  'resnet56':10,
  'resnet110':5,
  'resnet50':0.4,
- 'mobilenet_v1':1,
- 'mobilenet_v2':1
 }
 # Load pretrained model
 print('==> Loading pretrained model..')
@@ -49,12 +43,6 @@ if args.pretrain_model is None or not os.path.exists(args.pretrain_model):
 ckpt = torch.load(args.pretrain_model, map_location=device)
 if args.arch == 'resnet_imagenet':
     origin_model = import_module(f'model.{args.arch}').resnet(args.cfg).to(device)
-    origin_model.load_state_dict(ckpt)
-elif args.arch == 'mobilenet_v1':
-    origin_model = import_module(f'model.{args.arch}').mobilenet_v1().to(device)
-    origin_model.load_state_dict(ckpt['state_dict'])
-elif args.arch == 'mobilenet_v2':
-    origin_model = import_module(f'model.{args.arch}').mobilenet_v2().to(device)
     origin_model.load_state_dict(ckpt)
 elif args.arch == 'mobilenetv2_cifar':
     origin_model = import_module(f'model.{args.arch}').mobilenet_v2().to(device)
@@ -444,196 +432,6 @@ def graph_resnet_imagenet(pr_target):
 
     return model    
 
-def graph_mobilenet_v1(pr_target):    
-
-    pr_cfg = []
-    weights = []
-
-    cfg = []
-    centroids_state_dict = {}
-    bn_centroids_state_dict = {}
-    indices = []
-
-    i = 0
-    f_index = 0
-    #Sort the weights and get the pruning threshold
-    for name, module in origin_model.named_modules():
-        if isinstance(module, nn.Conv2d):
-            if i >= 25: 
-                break #do not prune last dw conv
-            if i <= 1:
-                i += 1
-                continue #do not prune first dw conv
-            if i == 2:
-                conv_weight = torch.div(module.weight.data,math.pow(flops_cfg[args.cfg][f_index],flops_lambda[args.cfg]))
-                weights.append(conv_weight.view(-1))
-                f_index += 1
-            elif i % 2 == 1:
-                conv_weight = torch.div(module.weight.data,math.pow(flops_cfg[args.cfg][f_index],flops_lambda[args.cfg]))
-            else:
-                conv_weight_1 = torch.div(module.weight.data,math.pow(flops_cfg[args.cfg][f_index],flops_lambda[args.cfg]))
-                weights.append(torch.cat((conv_weight.view(-1),conv_weight_1.view(-1)),0))
-                f_index += 1
-            i += 1
-
-    all_weights = torch.cat(weights,0)
-    preserve_num = int(all_weights.size(0) * (1-pr_target))
-    preserve_weight, _ = torch.topk(torch.abs(all_weights), preserve_num)
-    threshold = preserve_weight[preserve_num-1]
-
-    #Based on the pruning threshold, the prune cfg of each layer is obtained
-    pr_cfg.append(0)
-    for weight in weights:
-        pr_cfg.append(torch.sum(torch.lt(torch.abs(weight),threshold)).item()/weight.size(0))
-    print(pr_cfg)
-
-    current_layer = 0
-
-    flag = True
-    #Get the preseverd filters after pruning by graph method based on pruning proportion
-    for name, module in origin_model.named_modules():
-
-        if isinstance(module, nn.Conv2d):
-            
-            if current_layer == 13:
-                break
-            conv_weight = module.weight.data
-            #print(conv_weight.size())
-            if flag:
-                cfg.append(int(conv_weight.size(0) * (1 - pr_cfg[current_layer])))
-                current_layer -= 1
-                
-            current_layer += 1
-            flag = not flag
-
-    cfg.append(1024)
-
-    #load weight
-    model = import_module(f'model.{args.arch}').mobilenet_v1(layer_cfg=cfg).to(device)
-    '''
-    for param_tensor in model.state_dict():
-        print(param_tensor, '\t', model.state_dict()[param_tensor].size())
-    for param_tensor in centroids_state_dict:
-        print(param_tensor, '\t', centroids_state_dict[param_tensor].size())
-    '''
-
-    return model
-
-def graph_mobilenet_v2(pr_target):
-    pr_cfg = []
-    weights = []
-
-    cfg = []
-    centroids_state_dict = {}
-    prune_state_dict = []
-    current_index = 0
-    cat_cfg = [2,3,4,3,3,1,1]
-    c_index, i_index = 0, 0 
-
-    f_index = 0
-    # Sort the weights and get the pruning threshold
-    for name, module in origin_model.named_modules():
-
-        if isinstance(module, InvertedResidual):
-            conv1_weight = module.conv[3].weight.data
-            if len(module.conv) == 5: #expand_ratio = 1
-                #weights.append(conv1_weight.view(-1))
-                weights.append(torch.div(conv1_weight.view(-1),math.pow(flops_cfg[args.cfg][f_index],flops_lambda[args.cfg])))
-                f_index += 1
-            else:   
-                conv2_weight = module.conv[6].weight.data       
-                if i_index == 0:
-                    conv_weight = torch.cat((conv1_weight.view(-1),conv2_weight.view(-1)),0)
-                else:
-                    conv_weight = torch.cat((conv_weight,torch.cat((conv1_weight.view(-1),conv2_weight.view(-1)),0)),0)
-                i_index += 1
-                if i_index == cat_cfg[c_index]:
-                    conv_weight = torch.div(conv_weight,math.pow(flops_cfg[args.cfg][f_index],flops_lambda[args.cfg]))
-                    weights.append(conv_weight)  
-                    c_index += 1
-                    i_index = 0
-                    f_index += 1      
-
-    weights.append(torch.div(origin_model.state_dict()['features.18.0.weight'].view(-1),math.pow(flops_cfg[args.cfg][7],flops_lambda[args.cfg])))  #lastlayer          
-
-    all_weights = torch.cat(weights, 0)
-    preserve_num = int(all_weights.size(0) * (1 - pr_target))
-    preserve_weight, _ = torch.topk(torch.abs(all_weights), preserve_num)
-    threshold = preserve_weight[preserve_num - 1]
-
-    # Based on the pruning threshold, the prune cfg of each layer is obtained
-    for weight in weights:
-        pr_cfg.append(torch.sum(torch.lt(torch.abs(weight), threshold)).item() / weight.size(0))
-    print(pr_cfg)
-    graph_cfg = []
-    graph_cfg.append(pr_cfg[0])
-    for i in range(len(cat_cfg)):
-        for j in range(cat_cfg[i]):
-            graph_cfg.append(pr_cfg[i+1])
-    #print(graph_cfg)
-
-
-    model = import_module(f'model.{args.arch}_flops').mobilenet_v2(layer_cfg=graph_cfg).to(device)
-
-    return model
-
-def graph_mobilenetv2_cifar(pr_target):
-    pr_cfg = []
-    weights = []
-
-    cfg = []
-    centroids_state_dict = {}
-    prune_state_dict = []
-    current_index = 0
-    cat_cfg = [2,3,4,3,3,1,1]
-    c_index, i_index = 0, 0 
-
-    f_index = 0
-    # Sort the weights and get the pruning threshold
-    for name, module in origin_model.named_modules():
-
-        if isinstance(module, InvertedResidual):
-            conv1_weight = module.conv[3].weight.data
-            if len(module.conv) == 5: #expand_ratio = 1
-                #weights.append(conv1_weight.view(-1))
-                weights.append(torch.div(conv1_weight.view(-1),math.pow(flops_cfg[args.cfg][f_index],flops_lambda[args.cfg])))
-                f_index += 1
-            else:   
-                conv2_weight = module.conv[6].weight.data       
-                if i_index == 0:
-                    conv_weight = torch.cat((conv1_weight.view(-1),conv2_weight.view(-1)),0)
-                else:
-                    conv_weight = torch.cat((conv_weight,torch.cat((conv1_weight.view(-1),conv2_weight.view(-1)),0)),0)
-                i_index += 1
-                if i_index == cat_cfg[c_index]:
-                    conv_weight = torch.div(conv_weight,math.pow(flops_cfg[args.cfg][f_index],flops_lambda[args.cfg]))
-                    weights.append(conv_weight)  
-                    c_index += 1
-                    i_index = 0
-                    f_index += 1      
-
-    weights.append(torch.div(origin_model.state_dict()['features.18.0.weight'].view(-1),math.pow(flops_cfg[args.cfg][7],flops_lambda[args.cfg])))  #lastlayer          
-
-    all_weights = torch.cat(weights, 0)
-    preserve_num = int(all_weights.size(0) * (1 - pr_target))
-    preserve_weight, _ = torch.topk(torch.abs(all_weights), preserve_num)
-    threshold = preserve_weight[preserve_num - 1]
-
-    # Based on the pruning threshold, the prune cfg of each layer is obtained
-    for weight in weights:
-        pr_cfg.append(torch.sum(torch.lt(torch.abs(weight), threshold)).item() / weight.size(0))
-    print(pr_cfg)
-    graph_cfg = []
-    graph_cfg.append(pr_cfg[0])
-    for i in range(len(cat_cfg)):
-        for j in range(cat_cfg[i]):
-            graph_cfg.append(pr_cfg[i+1])
-    #print(graph_cfg)
-
-    model = import_module(f'model.{args.arch}').mobilenet_v2(layer_cfg=graph_cfg).to(device)
-
-    return model
-
 def main():
 
     print('==> Building Model..')
@@ -645,12 +443,6 @@ def main():
         model = graph_googlenet(args.pr_target)
     elif args.arch == 'resnet_imagenet':
         model = graph_resnet_imagenet(args.pr_target)
-    elif args.arch == 'mobilenet_v1':
-        model = graph_mobilenet_v1(args.pr_target)
-    elif args.arch == 'mobilenetv2_cifar':
-        model = graph_mobilenetv2_cifar(args.pr_target)
-    elif args.arch == 'mobilenet_v2':
-        model = graph_mobilenet_v2(args.pr_target)
     else:
         raise('arch not exist!')
     print("Graph Down!")
@@ -673,13 +465,6 @@ def main():
     if args.arch == 'resnet_imagenet':
         origin_model = import_module(f'model.{args.arch}').resnet(args.cfg).to(device)
         origin_model.load_state_dict(ckpt)
-    elif args.arch == 'mobilenet_v1':
-        origin_model = import_module(f'model.{args.arch}_flops').mobilenet_v1().to(device)
-        #origin_model.load_state_dict(ckpt['state_dict'])
-    elif args.arch == 'mobilenet_v2':
-        origin_model = import_module(f'model.{args.arch}_flops').mobilenet_v2().to(device)
-    elif args.arch == 'mobilenetv2_cifar':
-        origin_model = import_module(f'model.{args.arch}').mobilenet_v2().to(device)
         #origin_model.load_state_dict(ckpt)
     elif args.arch == 'vgg_cifar':
         origin_model = import_module(f'model.{args.arch}').VGG(args.cfg).to(device)
