@@ -171,7 +171,7 @@ class ResNet(nn.Module):
         downsample = None
         previous_dilation = self.dilation
         if outplanes == None:
-            outplanes = inplanes * block.expansion
+            outplanes = self.inplanes * block.expansion
         if dilate:
             self.dilation *= stride
             stride = 1
